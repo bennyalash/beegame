@@ -4,7 +4,7 @@
   "start_url": "/",
   "display": "standalone",
   "background_color": "#fff2cc",
-  "theme_color": "#FFDC74",
+  "theme_color": "#fff2cc",
   "icons": [
     {
       "src": "queen_blue_small.png",

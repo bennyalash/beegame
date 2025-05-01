@@ -287,8 +287,8 @@
     height: 80px;
     color: white;
     font-size: 16px;
-    letter-spacing:0.5px;
-    background: #e9c55d;
+    letter-spacing: 0.5px;
+    background: #FFDC74;
 }
     .footer div {
         display: flex;
