@@ -1,6 +1,13 @@
 html {
     background: #fff2cc;
 }
+html {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: contain;
+    position: fixed; /* optional */
+    width: 100%;
+}
 body {
     background: #fff2cc;
     display: flex;
