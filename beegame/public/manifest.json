@@ -1,7 +1,7 @@
 {
   "name": "Go Bee",
-  "short_name": "App",
-  "start_url": ".",
+  "short_name": "Go Bee",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#fff2cc",
   "theme_color": "#FFDC74",
