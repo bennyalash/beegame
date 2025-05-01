@@ -179,7 +179,6 @@ function App() {
   return (
       <>
           <div className="header">
-          Go Bee
           </div>
           <div className="game">
               <div className="confirmation-box">
@@ -233,7 +232,15 @@ function App() {
 
           </div>
           <div className="footer">
-                <button>Resign</button><button>Settings</button>
+              <div>
+                  <img src="flag.png" />Resign
+              </div>
+              <div>
+                  <img src="settings.png" />Settings
+              </div>
+              <div>
+                  <img src="person.png" />Profile
+              </div>
           </div>
     </>
   )

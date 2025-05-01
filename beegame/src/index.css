@@ -280,3 +280,26 @@
     background: red;
     border-radius: 0;
 }*/
+.footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    width: 100%;
+    height: 80px;
+    color: white;
+    font-size: 16px;
+    letter-spacing:0.5px;
+    background: #e9c55d;
+}
+    .footer div {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        height: 60px;
+        padding-top:2px;
+        color: #fff2cc;
+        justify-content: space-evenly;
+    }
+.footer div img{
+    height:24px;
+    aspect-ratio: 1/1;
+}
