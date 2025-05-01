@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import reactLogo from './assets/react.svg'
 import GameBoard from './components/GameBoard'
 import './App.css'
@@ -83,8 +83,29 @@ function App() {
     const [cards1, setCards1] = useState(initialCards1);
     const [cards2, setCards2] = useState(initialCards2);
     const [extraCard, setExtraCard] = useState(initialExtraCard);
+    const [previewPosition, setPreviewPosition] = useState(null);
+    const [isConfirming, setIsConfirming] = useState(false);
 
-    const updatePiecePosition = (newPosition) => {
+    const previewMove = (newPosition) => {
+        setPreviewPosition(newPosition);
+        setIsConfirming(true);
+    };
+
+
+    /*useEffect(() => {
+        if (isConfirming && previewPosition && piece) {
+            const confirmMove = window.confirm(`Move ${piece.type} to [${previewPosition[0]}, ${previewPosition[1]}]?`);
+            if (confirmMove) {
+                finalizeMove(previewPosition);
+            }
+            // Revert or clean up either way
+            setPreviewPosition(null);
+            setIsConfirming(false);
+        }
+    }, [isConfirming, previewPosition]);*/
+
+
+    const finalizeMove = (newPosition) => {
         const occupyingPiece = pieces.find(p =>
             p.position[0] === newPosition[0] && p.position[1] === newPosition[1]
         );
@@ -99,8 +120,7 @@ function App() {
         if (occupyingPiece) {
             if (occupyingPiece.type === 'queen') {
                 alert(turn == 1 ? "RED WINS" : "BLUE WINS");
-            } 
-            // remove the captured pawn
+            }
             setPieces(prevPieces =>
                 prevPieces
                     .filter(p => p.id !== occupyingPiece.id)
@@ -111,7 +131,6 @@ function App() {
                     )
             );
         } else {
-            // no capture, just move
             setPieces(prevPieces =>
                 prevPieces.map(p =>
                     p.id === piece.id
@@ -121,7 +140,6 @@ function App() {
             );
         }
 
-        // Card swapping
         setExtraCard(card);
         if (turn === 1) {
             const cardIndex = cards1.findIndex(c => c.name === card.name);
@@ -144,13 +162,16 @@ function App() {
         changeTurn();
     };
 
+
     
 
     const onSelectCard = (card) => {
-        setCard(card);
+        if (!isConfirming) {
+            setCard(card);
+        }
     }
     const onSelectPiece = (piece) => {
-        if (piece && piece.player == turn) {
+        if (!isConfirming && piece && piece.player == turn) {
             setPiece(piece);
         }
     }
@@ -158,13 +179,61 @@ function App() {
   return (
       <>
           <div className="header">
+          Go Bee
           </div>
           <div className="game">
+              <div className="confirmation-box">
+                  {turn == 1 && isConfirming && previewPosition && piece && (<>
+                      <div className="button-holder">
+                          <button onClick={() => {
+                              setPreviewPosition(null);
+                              setIsConfirming(false);
+                          }}>
+                              Cancel
+                          </button>
+                      </div>
+                      <div className="button-holder">
+                          <button onClick={() => {
+                              finalizeMove(previewPosition);
+                              setPreviewPosition(null);
+                              setIsConfirming(false);
+                          }}>
+                              Confirm
+                          </button>
+                      </div>
+                  </>)}
+              </div>
               <PlayerHand extraCard={extraCard} turn={turn} top={true} selectedCardIndex={card} cards={cards1} opponent={turn == 2} onSelectCard={onSelectCard} />
-              <GameBoard turn={turn} onMove={updatePiecePosition} card={card} piece={piece} onSelectPiece={onSelectPiece} selectedPiece={piece} coords={coords} pieces={pieces} />
+              <GameBoard turn={turn} onMove={previewMove} card={card} piece={piece} previewPosition={previewPosition} onSelectPiece={onSelectPiece} selectedPiece={piece} coords={coords} pieces={pieces} />
               <PlayerHand extraCard={extraCard} turn={turn} top={false} selectedCardIndex={card} cards={cards2} opponent={turn == 1} onSelectCard={onSelectCard} />
+
+              
+                  <div  className="confirmation-box">
+                  {turn == 2 && isConfirming && previewPosition && piece && (<>
+                      <div className="button-holder">
+                      <button onClick={() => {
+                          setPreviewPosition(null);
+                          setIsConfirming(false);
+                      }}>
+                          Cancel
+                          </button>
+                      </div>
+                      <div className="button-holder">
+                      <button onClick={() => {
+                          finalizeMove(previewPosition);
+                          setPreviewPosition(null);
+                          setIsConfirming(false);
+                      }}>
+                          Confirm
+                          </button>
+                      </div>
+                      </> )}
+                  </div>
+             
+
           </div>
           <div className="footer">
+                <button>Quit</button>
           </div>
     </>
   )

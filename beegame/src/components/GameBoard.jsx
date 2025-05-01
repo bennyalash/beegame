@@ -5,22 +5,46 @@ import Card from './Card';
 
 
 
-const GameBoard = ({ card, piece, onSelectPiece, selectedPiece, coords, pieces, onMove, turn, extraCard }) => {
+const GameBoard = ({ previewPosition, card, piece, onSelectPiece, selectedPiece, coords, pieces, onMove, turn, extraCard }) => {
 
 
     var absoluteMoves = [];
-    if (card && piece) {
+    if (card && piece && !previewPosition) {
         absoluteMoves = card?.moves?.map(([dq, dr]) => {
             const [q, r] = piece.position;
             const turnMultiplier = turn == 1 ? -1 : 1;
             return [q + dq * turnMultiplier, r + dr * turnMultiplier];
         });
     }
-    
+
+    let updatedPieces = pieces;
+
+    // Check if there's a piece to move and a preview position
+    if (piece && previewPosition) {
+        const targetId = piece.id;
+
+        // Step 1: Remove any piece at the preview position (e.g., capture)
+        updatedPieces = pieces.filter(p => {
+            const samePosition = p.position[0] === previewPosition[0] && p.position[1] === previewPosition[1];
+            const isSamePiece = p.id === targetId;
+            return !samePosition || isSamePiece;
+        });
+
+        // Step 2: Move the current piece to the preview position
+        updatedPieces = updatedPieces.map(p =>
+            p.id === targetId
+                ? { ...p, position: previewPosition }
+                : p
+        );
+    }
+
     return (
         <div className="board">
             {coords.map((coord) => {
-                const piece = pieces.find(p =>
+
+                
+                
+                piece = updatedPieces.find(p =>
                     p.position[0] === coord[0] &&
                     p.position[1] === coord[1]
                 );

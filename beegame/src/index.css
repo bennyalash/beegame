@@ -1,53 +1,98 @@
 ﻿
 .board, .card {
     position: relative;
-    width: 90%;
-    height:40%;
+    width: 100%;
+    height: 40%;
     aspect-ratio: 1 / 1;
     display: flex;
     align-items: center;
     justify-content: center;
     background: #fff2cc;
-    border-radius:10px;
-}
+/*    border-radius: 10px;
+*/}
 .board {
-    background: #fff2cc;
-    height:320px;
+    background: transparent;
+    height: 320px;
+/*    box-shadow: 0 0 5px 0 black;
+*/    /*perspective: 1000px;
+    perspective-origin: 50% 50%;
+    transform: rotateX(60deg);*/
 }
 .card {
     aspect-ratio: 1 / 1;
     background: #FFF2CC;
     cursor: pointer;
     transition: 0.0s ease;
-    border-radius: 10px;
-    height:100%;
-    width:100%;
+    border-radius: 25px;
+    height: 100%;
+    width: 100%;
+    box-shadow: 0 0 4px -2px black;
 }
+.confirmation-box {
+    height: 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 95%;
+    border: 1px solid transparent;
+    border-width:1px 0 0;
+    align-items: center;
+}
+.confirmation-box:nth-of-type(1) {
+    transform: rotate(180deg);
+}
+    .confirmation-box:has(button) {
+        border: 1px solid #999;
+        border-width: 1px 0 0;
+    }
+    .confirmation-box .button-holder{
+        width:100%;
+    }
+    .confirmation-box button {
+        background: green;
+        border: 0;
+        color: white;
+        outline: 0;
+        font-family: "Odibee Sans";
+        font-size: 20px;
+        font-weight: 100;
+        letter-spacing: 1px;
+        width: 80%;
+        border-radius:5px;
+        cursor:pointer;
+    }
+    .confirmation-box .button-holder:first-of-type button{
+        background:transparent;
+        color:#666;
+    }
     /*.card:hover  {
         box-shadow: 0 0 0 1px #FFDC74 inset, 0 0 0 2px #FFDC74;
-    }
-    .card.selected, .card.selected:hover {
-        box-shadow: 0 0 0 1px #FFDC74 inset, 0 0 0 4px #FFDC74;
     }*/
-        .card.selected::before {
-            content: '▼';
-            color: white;
-            position: absolute;
-            font-size: 30px;
-            width: 30px;
-            height: 30px;
-            left: calc(50% - 15px);
-            bottom: 100%;
-            border-radius: 100%;
-        }
+    .card.selected, .card.selected:hover {
+        box-shadow: 0 0 4px -2px black, 0 0 1px 2px #FFDC74;
+    }
+    .card.selected::before {
+        content: '▼';
+        color: black;
+        position: absolute;
+        font-size: 30px;
+        width: 30px;
+        height: 30px;
+        left: calc(50% - 15px);
+        bottom: calc(100% + 8px);
+        border-radius: 100%;
+    }
         
     .card .center {
         background: #873900;
     }
-.player-hand:nth-of-type(1) {
+.player-hand.top {
     transform: rotate(180deg);
 }
-.player-hand:has(.selected) .card:not(.selected) .card-hex, .player-hand .ignore .card-hex {
+.player-hand:has(.selected) .card:not(.selected) .card-hex {
+    filter: grayscale(0.5);
+    opacity: 1;
+}
+.player-hand .ignore .card-hex, .player-hand:has(.selected) .ignore:not(.selected) .card-hex {
     filter: grayscale(0.75);
     opacity: 0.75;
 }
@@ -80,6 +125,10 @@
     .hex-tile.selected img {
         filter: drop-shadow(0 2px 0px #FFDC74) drop-shadow(-2px 0 0px #FFDC74) drop-shadow(2px 0 0px #FFDC74) drop-shadow(0 -1px 0px #FFDC74);
     }
+.hex-tile.move img {
+    filter: brightness(0.75) grayscale(1);
+    opacity:0.5;
+}
 
     /*.hex-tile.selected::before {
         content: "";
@@ -108,9 +157,24 @@
         z-index: -1;
         transform: scale(0.25);
     }
-.card-hex.move {
-    background: linear-gradient(to top right, #b78000, #c13500);
-}
+    .hex-tile.move.start::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #b78000;
+        clip-path: inherit;
+        z-index: 1;
+        transform: scale(0.25);
+    }
+    .hex-tile.move.start::after {
+        transform: scale(0.5);
+    }
+    .card-hex.move {
+        background: linear-gradient(to top right, #b78000, #c13500);
+    }
 .card-hex.move::after {
     transform: scale(0);
     background:black;
@@ -151,12 +215,15 @@
 .player-hand {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    width:calc(100% - 20px);
-    max-width:100%;
-    height:auto;
-    padding:10px;
-    grid-column-gap:10px;
-    grid-row-gap:2px;
+    width: calc(100% - 20px);
+    max-width: 100%;
+    height: auto;
+    padding: 10px;
+    grid-column-gap: 10px;
+    grid-row-gap: 2px;
+    color: black;
+    letter-spacing:1px;
+    font-size:20px;
 }
 .extraCard {
     position: absolute;
