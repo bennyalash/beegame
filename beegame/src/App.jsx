@@ -233,7 +233,7 @@ function App() {
 
           </div>
           <div className="footer">
-                <button>Quit</button>
+                <button>Resign</button><button>Settings</button>
           </div>
     </>
   )

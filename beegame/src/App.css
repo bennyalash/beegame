@@ -6,26 +6,24 @@ body {
     align-items: center;
 }
 #root {
-    max-width: 450px;
+    max-width: 100vw;
+    width:450px;
     margin: 0 auto;
     padding: 0;
     text-align: center;
     height: 900px;
     max-height:100vh;
     font-family:"Odibee Sans";
-    /*    background: linear-gradient(to top, #157db4, #157db4 50%, #b41515 50%, #b41515);
-*/ box-shadow: 0 0 0 10px black;
+ box-shadow: 0 0 0 10px black;
     display: flex;
-    width: 100%;
-/*    border-radius: 60px;
-*/    overflow: hidden;
+    overflow: hidden;
     flex-direction: column;
     background: url("background2.jpg") grey;
     background-size: cover;
     background-blend-mode: luminosity;
 }
 .game {
-    height: 100%;
+    height: calc(min(100% - 100px, 100vh - 100px));
     width: 100%;
     overflow: hidden;
     display: flex;
