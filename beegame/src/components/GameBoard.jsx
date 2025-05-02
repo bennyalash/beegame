@@ -5,7 +5,7 @@ import Card from './Card';
 
 
 
-const GameBoard = ({ previewPosition, card, piece, onSelectPiece, selectedPiece, coords, pieces, onMove, turn, extraCard }) => {
+const GameBoard = ({ lms, lme, previewPosition, card, piece, onSelectPiece, selectedPiece, coords, pieces, onMove, turn, extraCard }) => {
 
 
     var absoluteMoves = [];
@@ -38,13 +38,14 @@ const GameBoard = ({ previewPosition, card, piece, onSelectPiece, selectedPiece,
         );
     }
 
+    
     return (
         <div className="board">
             {coords.map((coord) => {
 
+                const highlight = piece != 0 && piece?.position[0] === coord[0] && piece?.position[1] === coord[1];
                 
-                
-                piece = updatedPieces.find(p =>
+                const temppiece = updatedPieces.find(p =>
                     p.position[0] === coord[0] &&
                     p.position[1] === coord[1]
                 );
@@ -53,9 +54,12 @@ const GameBoard = ({ previewPosition, card, piece, onSelectPiece, selectedPiece,
                     ([q, r]) => q === coord[0] && r === coord[1]
                 );
 
+                const lastMove = lms && lms[0] == coord[0] && lms[1] == coord[1];
+                const lastMove2 = lme && lme[0] == coord[0] && lme[1] == coord[1];
+
                 return (
-                    <HexTile key={coord.join(',')} q={coord[0]} r={coord[1]} piece={piece} turn={turn} move={exists && (!piece || piece.player != turn)} isSelected={selectedPiece?.id == piece?.id} onSelectPiece={onSelectPiece} onMove={onMove }>
-                        {piece && <Piece piece={piece} />}
+                    <HexTile key={coord.join(',')} highlight={highlight || lastMove || lastMove2} q={coord[0]} r={coord[1]} piece={temppiece} turn={turn} move={exists && (!temppiece || temppiece.player != turn)} isSelected={selectedPiece?.id == temppiece?.id} onSelectPiece={onSelectPiece} onMove={onMove }>
+                        {temppiece && <Piece piece={temppiece} />}
                     </HexTile>
                 );
             })}

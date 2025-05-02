@@ -7,18 +7,13 @@ const PlayerHand = ({ cards, selectedCardIndex, onSelectCard, opponent, top, ext
     
     return (
         <div className={`player-hand${top ? " top" : ""}`}>
+            {((top && turn == 1) || (!top && turn == 2)) && <>
+                <div style={{ gridColumn: "span 1" }}>On Deck</div>
+                <div style={{ gridColumn: "span 2" }}>Cards</div>
+                <div style={{ gridColumn: "span 1", height: "4px", border: "2px solid black", borderBottom: 0, borderRadius: "4px 4px 0 0" }}> </div>
+                <div style={{ gridColumn: "span 2", height: "4px", border: "2px solid black", borderBottom: 0, borderRadius: "4px 4px 0 0" }}></div>
+            </>}
             
-            <div style={{ gridColumn: "span 1" }}>
-            On Deck
-            </div>
-            <div style={{ gridColumn: "span 2" }}>
-            Cards
-            </div>
-            <div style={{ gridColumn: "span 1", height: "4px", border: "2px solid black", borderBottom: 0 }}>
-                
-            </div><div style={{ gridColumn: "span 2", height: "4px", border: "2px solid black", borderBottom: 0 }}>
-            
-            </div>
             {((top && turn == 1) || (!top && turn == 2)) ? <Card
                 key={extraCard?.name}
                 card={extraCard}
