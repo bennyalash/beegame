@@ -4,12 +4,51 @@ import '../App.css'
 import PlayerHand from './PlayerHand'
 import { Confirmation } from './Confirmation'
 import { useNavigate } from 'react-router-dom';
+import { useSwipeable } from 'react-swipeable';
 
-export function Game() {
+export function Game({ onRematch }) {
+
+    const generateInitialPieces = () => ([
+        { id: 'p1-queen', player: 1, type: 'queen', position: [0, -2] },
+        { id: 'p1-pawn1', player: 1, type: 'pawn', position: [-1, -1] },
+        { id: 'p1-pawn2', player: 1, type: 'pawn', position: [1, -2] },
+        { id: 'p2-queen', player: 2, type: 'queen', position: [0, 2] },
+        { id: 'p2-pawn1', player: 2, type: 'pawn', position: [-1, 2] },
+        { id: 'p2-pawn2', player: 2, type: 'pawn', position: [1, 1] },
+    ]);
+
+    const generateInitialCards1 = () => ([
+        { name: "1", moves: [[0, -2], [0, 1]] },
+        { name: "2", moves: [[-2, 0], [-1, 1], [1, 0], [2, -2]] },
+    ]);
+
+    const generateInitialCards2 = () => ([
+        { name: "3", moves: [[0, 1], [1, -1], [-1, 0]] },
+        { name: "4", moves: [[0, -1], [-1, 1], [1, 0]] },
+    ]);
+
+    const generateExtraCard = () => ({
+        name: "20202", moves: [[0, -1], [2, -1], [-2, 1]]
+    });
+
+    const [pieces, setPieces] = useState(generateInitialPieces);
+    const [cards1, setCards1] = useState(generateInitialCards1);
+    const [cards2, setCards2] = useState(generateInitialCards2);
+    const [extraCard, setExtraCard] = useState(generateExtraCard);
+
+
+    const [previewPosition, setPreviewPosition] = useState(null);
+    const [isConfirming, setIsConfirming] = useState(false);
+    const [lastMoveStart, setLMS] = useState(null);
+    const [lastMoveEnd, setLME] = useState(null);
     const [count, setCount] = useState(0);
     const [card, setCard] = useState(0);
     const [piece, setPiece] = useState(0);
     const [turn, setTurn] = useState(2);
+    const [gameOver, setGameOver] = useState(false);
+    const [winner, setWinner] = useState(null);
+    const [winType, setWinType] = useState(null);
+    const [boardFlips, setBoardFlips] = useState(false);
     const navigate = useNavigate();
 
     const changeTurn = () => {
@@ -24,77 +63,10 @@ export function Game() {
         [-2, 2], [-2, 1], [-1, -1], [0, -2], [1, -2], [-2, 0], [2, 0]
     ];
 
-    const [pieces, setPieces] = useState([
-        { id: 'p1-queen', player: 1, type: 'queen', position: [0, -2] },
-        { id: 'p1-pawn1', player: 1, type: 'pawn', position: [-1, -1] },
-        { id: 'p1-pawn2', player: 1, type: 'pawn', position: [1, -2] },
-        { id: 'p2-queen', player: 2, type: 'queen', position: [0, 2] },
-        { id: 'p2-pawn1', player: 2, type: 'pawn', position: [-1, 2] },
-        { id: 'p2-pawn2', player: 2, type: 'pawn', position: [1, 1] },
-    ]);
-
-    const initialCards1 = [
-        {
-            name: "1",
-            moves: [
-                [0, -2],
-                [0, 1]
-            ]
-        },
-        {
-            name: "2",
-            moves: [
-                [-2, 0],
-                [-1, 1],
-                [1, 0],
-                [2, -2]
-            ]
-        }
-    ];
-
-    const initialCards2 = [
-        {
-            name: "3",
-            moves: [
-                [0, 1],
-                [1, -1],
-                [-1, 0]
-            ]
-        },
-        {
-            name: "4",
-            moves: [
-                [0, -1],
-                [-1, 1],
-                [1, 0]
-            ]
-        }
-    ];
-
-    const initialExtraCard =
-    {
-        name: "20202",
-        moves: [
-            [0, -1],
-            [2, -1],
-            [-2, 1]
-        ]
-    }
-
-
-    const [cards1, setCards1] = useState(initialCards1);
-    const [cards2, setCards2] = useState(initialCards2);
-    const [extraCard, setExtraCard] = useState(initialExtraCard);
-    const [previewPosition, setPreviewPosition] = useState(null);
-    const [isConfirming, setIsConfirming] = useState(false);
-    const [lastMoveStart, setLMS] = useState(null);
-    const [lastMoveEnd, setLME] = useState(null);
-
     const previewMove = (newPosition) => {
         setPreviewPosition(newPosition);
         setIsConfirming(true);
     };
-
 
     const finalizeMove = (newPosition) => {
         const occupyingPiece = pieces.find(p =>
@@ -105,17 +77,25 @@ export function Game() {
         setLME(newPosition);
 
         if (piece.type == "queen" && turn == 1 && newPosition[0] == 0 && newPosition[1] == 2) {
-            alert("RED WINS");
+            setWinner("Red");
+            setWinType("Infest");
         }
         if (piece.type == "queen" && turn == 2 && newPosition[0] == 0 && newPosition[1] == -2) {
-            alert("BLUE WINS");
+            setWinner("Blue");
+            setWinType("Infest");
         }
 
         
 
         if (occupyingPiece) {
             if (occupyingPiece.type === 'queen') {
-                alert(turn == 1 ? "RED WINS" : "BLUE WINS");
+                setWinType("Sting");
+                if (turn == 1) {
+                    setWinner("Red");
+                }
+                else {
+                    setWinner("Blue");
+                }
             }
             setPieces(prevPieces =>
                 prevPieces
@@ -158,16 +138,14 @@ export function Game() {
         changeTurn();
     };
 
-
-
-
     const onSelectCard = (card) => {
-        if (!isConfirming) {
+        
+        if (!winner && !isConfirming) {
             setCard(card);
         }
     }
     const onSelectPiece = (piece) => {
-        if (!isConfirming && piece && piece.player == turn) {
+        if (!winner && !isConfirming && piece && piece.player == turn) {
             setPiece(piece);
         }
     }
@@ -183,11 +161,46 @@ export function Game() {
         setIsConfirming(false);
     }
 
+    const [menuOpen, setMenuOpen] = useState(false);
+
+    const handlers = useSwipeable({
+        onSwipedRight: () => setMenuOpen(false),
+        onSwipedLeft: (eventData) => {
+            console.log(eventData.initial[1] - window.innerWidth);
+            if (eventData.initial[0] > window.innerWidth - 60) {
+                // Only open if swipe starts from right edge
+                setMenuOpen(true);
+            }
+        },
+        delta: 30, // minimum distance(px) to count as swipe
+        trackTouch: true,
+        trackMouse: true
+    });
+
     return (
-        <>
+        <div style={{ display: "contents" }} className="gameWrapper" {...handlers} >
             <div className="header">
             </div>
-            <div className="game">
+            {!winner && <div className={`popup menu ${menuOpen ? "open" : "closed"}`}>
+                <h1>Settings</h1>
+                <br></br>
+                <div className="settings-buttons">
+                    <label>Board Flips: </label><button onClick={() => setBoardFlips(!boardFlips)} className={`${boardFlips ? "on" : "off"}`}>{boardFlips ? "On" : "Off"}</button>
+                </div>
+                <div className="auth-buttons">
+                    <button onClick={() => navigate("/")}>Exit</button>
+                </div>
+            </div>}
+            {winner && <div className="popup">
+                <h1>{winner} Wins!</h1>
+                {winType && <p>By {winType}</p>}
+                <img src={`/queen_${winner?.toLowerCase() || "red"}.png`} />
+                <div className="auth-buttons">
+                    <button onClick={() => onRematch()} >Rematch</button>
+                    <button onClick={() => navigate("/")}>Exit</button>
+                </div>
+            </div>}
+            <div className={`game ${boardFlips ? "flips" : ""}`}>
 
                 <PlayerHand extraCard={extraCard} turn={turn} top={true} selectedCardIndex={card} cards={cards1} opponent={turn == 2} onSelectCard={onSelectCard} />
 
@@ -209,6 +222,6 @@ export function Game() {
                     {/*<img src="person.png" />Profile*/}
                 </div>
             </div>
-        </>
+        </div>
     )
 }

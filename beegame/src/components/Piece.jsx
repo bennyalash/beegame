@@ -8,7 +8,7 @@ const Piece = ({ piece }) => {
             
         >
 
-            {piece.type === 'queen' ? <img src={`queen_${color}.png`} alt={`${color} Queen`} title={`${color} Queen`} /> : <img src={`bee_${color}.png`} alt={`${color} Bee`} title={`${color} Bee`} />}
+            {piece.type === 'queen' ? <img src={`/queen_${color}.png`} alt={`${color} Queen`} title={`${color} Queen`} /> : <img src={`/bee_${color}.png`} alt={`${color} Bee`} title={`${color} Bee`} />}
         </div>
     );
 };
