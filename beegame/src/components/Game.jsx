@@ -273,7 +273,7 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user }) {
                     <label>Board Flips: </label><button onClick={() => setBoardFlips(!boardFlips)} className={`${boardFlips ? "on" : "off"}`}>{boardFlips ? "On" : "Off"}</button>
                 </div>
                 <div className="auth-buttons">
-                    <button onClick={() => navigate("/")}>Exit</button>
+                    <button onClick={() => navigate("/")}>Quit</button>
                 </div>
             </div>}
             {winner && <div className="popup">
@@ -282,7 +282,7 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user }) {
                 <img src={`/queen_${winner?.toLowerCase() || "red"}.png`} />
                 <div className="auth-buttons">
                     {!online && <button onClick={() => onRematch()} >Rematch</button>}
-                    <button onClick={() => navigate("/")}>Exit</button>
+                    <button onClick={() => navigate("/")}>Quit</button>
                 </div>
             </div>}
             <div className={`game ${boardFlips ? "flips" : ""}${online ? " online-game" : ""}${player == 1 ? " p1" : " p2"}${turn == 1 ? " t1" : " t2"}`}>

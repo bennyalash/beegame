@@ -67,7 +67,14 @@ body:has(.youtube) {
         font-family: 'Rubik';
         font-weight: 700;
         text-transform: capitalize;
+        color:black;
     }
+    button{
+        color:black;
+    }
+        button:focus {
+            transform: scale(0.95);
+        }
 .settings-buttons {
     width: 66%;
     margin: 0px auto 20px;
