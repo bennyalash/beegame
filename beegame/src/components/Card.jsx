@@ -18,7 +18,8 @@ const Card = ({ card, onSelect, isSelected, ignore = false }) => {
         >
             {hexCoords.map(([q, r]) => {
                 const isCenter = (q === 0 && r === 0);
-                const isMove = card.moves.some(move => move[0] === q && move[1] === r);
+
+                const isMove = card?.moves.some(move => move.x === q && move.y === r);
 
                 const xSpacing = tileSize * 0.75;
                 const ySpacing = (Math.sqrt(3) / 2 * tileSize);

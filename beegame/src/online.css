@@ -1,0 +1,80 @@
+.online button {
+    background: #FFCE31;
+    outline: 0;
+    border: 0;
+    border-radius: 10px;
+    box-shadow: 0 5px 0 0 #E5B10A;
+    padding: 5px 20px;
+    font-size: 20px;
+    font-family: 'Rubik';
+    font-weight: 700;
+    text-transform: capitalize;
+    width: 45%;
+}
+.online h1 {
+    margin-bottom: 10px;
+}
+.online {
+    display:flex;
+    flex-direction:column;
+    gap:40px;
+}
+    .online .friends {
+        width: calc(90% - 10px);
+        margin: auto;
+        padding: 5px;
+        border-radius:5px;
+        background: #FFCE31;
+        min-height:46px;
+    }
+    .online .friend {
+        display: grid;
+        width: calc(100% - 10px);
+        border-bottom: 1px solid #E5B10A;
+        border-top: 1px solid #E5B10A;
+        grid-template-columns: 1fr 1fr;
+        font-family: 'Rubik';
+        font-weight: 600;
+        color: black;
+        align-items: center;
+        text-align: left;
+        padding: 10px 5px;
+        font-size: 18px;
+    }
+        .online .friend:first-child {
+            border-top: 0;
+        }
+    .online .friend:last-child{
+        border-bottom:0;
+    }
+        .online .friend button {
+            width: 100%;
+            text-align: center;
+            padding: 5px 10px;
+            box-shadow: 0 5px 0 0 black;
+            background: #333;
+            color: #eee;
+            font-size:16px;
+            margin-top:-3px;
+        }
+#root{
+    border:2px solid black;
+}
+.game-room{
+    display:contents;
+}
+.game-room p{
+    color:black;
+    font-family:'Rubik';
+    font-size:18px;
+}
+.online-game.p1 {
+    transform: rotate(180deg);
+}
+/*.online-game.p1 .board {
+    transform: rotate(180deg);
+}*/
+
+.bracket-label, .bracket{
+    display:none;
+}

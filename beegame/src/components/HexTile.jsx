@@ -1,7 +1,7 @@
 import React from 'react';
 import { useState } from 'react'
 
-const HexTile = ({ q, r, children, piece, onSelectPiece, isSelected, move, onMove, turn, highlight }) => {
+const HexTile = ({ q, r, children, piece, onSelectPiece, isSelected, move, onMove, turn, highlight, online, p }) => {
     const hexWidth = 79; // width of each hex
     const hexHeight = Math.sqrt(3) / 2 * hexWidth; // perfect hexagon proportions
 
@@ -19,7 +19,7 @@ const HexTile = ({ q, r, children, piece, onSelectPiece, isSelected, move, onMov
     return (
         <div
             onClick={move ? () => onMove([q, r]) : () => onSelectPiece(piece)}
-            className={`hex-tile${piece?.player == turn ? " active-player" : ""}${isSelected && piece ? " selected" : ""}${move ? " move" : ""}${start ? " start start-" + player : ""}${highlight ? " highlight" : ""}`}
+            className={`hex-tile${piece?.player == turn && (!online || turn == p) ? " active-player" : ""}${isSelected && piece ? " selected" : ""}${move ? " move" : ""}${start ? " start start-" + player : ""}${highlight ? " highlight" : ""}`}
             style={{
                 transform: `translate(${x}px, ${y}px)`
             }}

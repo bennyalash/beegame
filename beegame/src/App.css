@@ -109,9 +109,23 @@ body:has(.youtube) {
     background: #fff2cc;
     justify-content: space-between;
 }
-.game.flips:has(.top .ignore){
-    transform:rotate(180deg);
+
+.gameWrapper:has(.popup:not(.menu)) .player-hand {
+    display: none;
 }
+.gameWrapper:has(.popup:not(.menu)) .game {
+    justify-content: flex-start;
+}
+    .gameWrapper:has(.popup:not(.menu)) .game.online-game.p1 {
+        justify-content: flex-end;
+    }
+    .gameWrapper:has(.popup:not(.menu)) .confirmation-box {
+        height: 80px;
+    }
+
+    .game.flips:has(.top .ignore) {
+        transform: rotate(180deg);
+    }
 .hidden button{
     opacity:0;
     pointer-events:none;

@@ -8,15 +8,11 @@
     align-items: center;
     justify-content: center;
     background: #fff2cc;
-/*    border-radius: 10px;
-*/}
+}
 .board {
     background: transparent;
     height: 350px;
-/*    box-shadow: 0 0 5px 0 black;
-*/    /*perspective: 1000px;
-    perspective-origin: 50% 50%;
-    transform: rotateX(60deg);*/
+
 }
 .card {
     aspect-ratio: 1 / 1;
@@ -26,8 +22,8 @@
     border-radius: 10px;
     height: 100%;
     width: 100%;
-/*    box-shadow: 0 0 4px -2px black;
-*/}
+
+}
 .confirmation-box {
     height: 40px;
     display: flex;
@@ -106,6 +102,16 @@
     width:100px;
     margin:auto;
     margin-bottom:-10px;
+}
+.homescreen h1{
+    margin-bottom:0;
+}
+.homescreen p {
+    font-family: 'Rubik';
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+    color: #E5B10A;
 }
 .player-hand div {
     color: #fff2cc;
@@ -311,14 +317,14 @@
 }*/
 .popup{
     position:absolute;
-    top:50%;
-    transform:translateY(calc(-50% - 15px));
+    bottom:0;
+    /*transform:translateY(calc(-50% - 15px));*/
     z-index:100;
     background:white;
-    left:20%;
-    width:60%;
+    /*left:20%;*/
+    width:100%;
     padding:40px 0;
-    border-radius:10px;
+    border-radius:50px 50px 0 0 ;
     box-shadow:0 0 5px -2px black;
     font-family:"Rubik";
 }
@@ -329,10 +335,11 @@
     .popup.menu {
         height: 350px;
         width: 90%;
-        padding-right:5%;
+        padding-right: 5%;
         border-radius: 10px 0 0 10px;
         left: calc(100% - 10px);
         transition: 0.25s ease;
+        transform: translateY(calc(-50% - 15px));
     }
 .popup h1{
     font-size:36px;
@@ -391,4 +398,19 @@
 .footer div img{
     height:24px;
     aspect-ratio: 1/1;
+}
+
+.bracket {
+    height: 4px;
+    border-width: 2px 2px 0px;
+    border-top-style: solid;
+    border-right-style: solid;
+    border-bottom-style: initial;
+    border-left-style: solid;
+    border-top-color: black;
+    border-right-color: black;
+    border-bottom-color: initial;
+    border-left-color: black;
+    border-image: initial;
+    border-radius: 4px 4px 0px 0px;
 }
