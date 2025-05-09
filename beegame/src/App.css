@@ -146,13 +146,13 @@ body:has(.youtube) {
     display: none;
 }
 .gameWrapper:has(.popup:not(.menu)) .game, .gameOver.game {
-    justify-content: flex-start;
+    justify-content: center;
 }
     .gameWrapper:has(.popup:not(.menu)) .game.online-game.p1, .gameOver.game.online-game.p1 {
-        justify-content: flex-end;
+        justify-content: center;
     }
 .gameWrapper:has(.popup:not(.menu)) .board, .gameOver.board {
-    height:500px;
+    height:50%;
 }
 .gameWrapper:has(.popup:not(.menu)) .game.online-game.p1, .gameOver.game.online-game.p1 {
 
