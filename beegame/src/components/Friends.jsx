@@ -311,7 +311,7 @@ export function Friends({ logout, user }) {
     
 
             </div>
-            <div className="page-footer page-global">
+            <div className="">
 
             </div>
         </div>

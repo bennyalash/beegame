@@ -134,7 +134,7 @@ export function ActiveGames({ user }) {
                     }
                 </div>
             </div>
-            <div className="page-footer page-global">
+            <div className="">
 
             </div>
         </div>

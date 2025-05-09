@@ -3,8 +3,8 @@
   "short_name": "Go Bee",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#fff2cc",
-  "theme_color": "#fff2cc",
+  "background_color": "#212c31",
+  "theme_color": "#212c31",
   "icons": [
     {
       "src": "icons/queen_blue_small.png",

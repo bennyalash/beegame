@@ -95,7 +95,6 @@ export function Home({ logout, user }) {
                 
                 <button onClick={() => navigate('/active')}>Active Games</button>
                 <br></br>
-                <br></br>
                 <button onClick={() => navigate('/game')}>Pass & Play</button>
                 <div className="button-holder"><button onClick={() => logout()}>Logout</button></div>
                 {game && state == "waiting" &&
@@ -112,7 +111,7 @@ export function Home({ logout, user }) {
                 }
 
                 </div>
-            <div className="page-footer page-global">
+            <div className="">
                 
             </div>
         </div>
