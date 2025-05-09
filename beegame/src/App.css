@@ -147,9 +147,11 @@ body:has(.youtube) {
 }
 .gameWrapper:has(.popup:not(.menu)) .game, .gameOver.game {
     justify-content: center;
+    padding-bottom: 300px;
 }
     .gameWrapper:has(.popup:not(.menu)) .game.online-game.p1, .gameOver.game.online-game.p1 {
         justify-content: center;
+        padding-top: 300px;
     }
 .gameWrapper:has(.popup:not(.menu)) .board, .gameOver.board {
     height:50%;
