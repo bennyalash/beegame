@@ -159,6 +159,7 @@ body:has(.youtube) {
 }
 .gameWrapper:has(.popup:not(.menu)) .confirmation-box, .gameOver .confirmation-box {
     height: 80px;
+    max-height:80px;
 }
 
     .game.flips:has(.top .ignore) {
