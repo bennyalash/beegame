@@ -1,5 +1,22 @@
+:root {
+    --white: #fffbee;
+    --black: #000000;
+    --yellow1: #ffe77a;
+    --yellow2: #fbee77;
+    --yellow3: #e6b10a;
+    --yellow4: #b58a00;
+    --yellow5: #433801;
+    --grey1: #3b708d;
+    --grey2: #375f75;
+    --grey3: #2b4350;
+    --grey4: #212c31;
+    --grey5: #13181b;
+    --dull1: #919191;
+    --dull2: #696969;
+}
+
 html {
-    background: #fff2cc;
+    background: var(--white);
 }
 html {
     height: 100%;
@@ -9,7 +26,7 @@ html {
     width: 100%;
 }
 body {
-    background: #fff2cc;
+    background: var(--white);
     display: flex;
     margin: 0;
     height: 100vh;
@@ -28,12 +45,15 @@ body {
     display: flex;
     overflow: hidden;
     flex-direction: column;
-    position:relative;
+    position: relative;
+    background: var(--grey3);
 }
 h1{
     font-weight:normal;
-    font-size:48px;
+    font-size:32px;
     margin-top:0;
+    margin-bottom:10px;
+    color:var(--white);
 }
 .basic-instructions{
     color:white;
@@ -42,13 +62,13 @@ h1{
     font-weight:700;
     padding:5px;
 }
-body:has(.auth-buttons) {
+/*body:has(.auth-buttons) {
     background: #fff2cc;
     color: #FFCE31;
 }
 body:has(.youtube) {
     background: black !important;
-}
+}*/
 .auth-buttons{
     display:flex;
     flex-direction:column;
@@ -56,29 +76,27 @@ body:has(.youtube) {
     margin:0 auto;
     gap:20px;
 }
-    .auth-buttons button, .settings-buttons button {
-        background: #FFCE31;
+    button {
+        background: var(--yellow3);
         outline: 0;
         border: 0;
         border-radius: 10px;
-        box-shadow: 0 5px 0 0 #E5B10A;
-        padding: 5px 20px;
-        font-size: 24px;
+        box-shadow: 0 5px 0 0 var(--yellow4);
+        padding: 10px;
+        font-size: 20px;
         font-family: 'Rubik';
-        font-weight: 700;
+        font-weight: 800;
         text-transform: capitalize;
-        color:black;
+        color: var(--white);
     }
-    button{
-        color:black;
-    }
+
         button:focus {
             transform: scale(0.95);
         }
 .settings-buttons {
     width: 66%;
     margin: 0px auto 20px;
-    color: black;
+    color: var(--white);
     font-weight: 700;
     font-size: 20px;
     display: flex;
@@ -99,6 +117,13 @@ body:has(.youtube) {
     .auth-buttons button:focus {
         transform: scale(0.95);
     }
+.min-game-board {
+    zoom: 0.4;
+    pointer-events:none;
+}
+.min-game-board *{
+    pointer-events: none !important;
+}
 .header {
     background: #FFCE31;
     height: 21px;
@@ -113,22 +138,28 @@ body:has(.youtube) {
     display: flex;
     align-items: center;
     flex-direction: column;
-    background: #fff2cc;
+    background: var(--grey4);
     justify-content: space-between;
 }
 
-.gameWrapper:has(.popup:not(.menu)) .player-hand {
+.gameWrapper:has(.popup:not(.menu)) .player-hand, .gameOver .player-hand {
     display: none;
 }
-.gameWrapper:has(.popup:not(.menu)) .game {
+.gameWrapper:has(.popup:not(.menu)) .game, .gameOver.game {
     justify-content: flex-start;
 }
-    .gameWrapper:has(.popup:not(.menu)) .game.online-game.p1 {
+    .gameWrapper:has(.popup:not(.menu)) .game.online-game.p1, .gameOver.game.online-game.p1 {
         justify-content: flex-end;
     }
-    .gameWrapper:has(.popup:not(.menu)) .confirmation-box {
-        height: 80px;
-    }
+.gameWrapper:has(.popup:not(.menu)) .board, .gameOver.board {
+    padding-top: 40px;
+}
+.gameWrapper:has(.popup:not(.menu)) .game.online-game.p1, .gameOver.game.online-game.p1 {
+    padding-bottom: 40px;
+}
+.gameWrapper:has(.popup:not(.menu)) .confirmation-box, .gameOver .confirmation-box {
+    height: 80px;
+}
 
     .game.flips:has(.top .ignore) {
         transform: rotate(180deg);
@@ -150,8 +181,15 @@ body:has(.youtube) {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
+.bottom-notification{
+    background:white;
+    position:absolute;width:100%;
+    margin:auto;
+    left:0;
+}
+
 @keyframes logo-spin {
-  from {
+    from {
     transform: rotate(0deg);
   }
   to {

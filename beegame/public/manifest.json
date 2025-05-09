@@ -7,12 +7,12 @@
   "theme_color": "#fff2cc",
   "icons": [
     {
-      "src": "queen_blue_small.png",
+      "src": "icons/queen_blue_small.png",
       "sizes": "180x180",
       "type": "image/png"
     },
     {
-      "src": "queen_blue.png",
+      "src": "icons/queen_blue.png",
       "sizes": "512x512",
       "type": "image/png"
     }

@@ -5,10 +5,10 @@ import PlayerHand from './PlayerHand'
 import { Confirmation } from './Confirmation'
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSwipeable } from 'react-swipeable';
-import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
-export function Game({ onRematch, online = false, p1, p2, gameData, user }) {
+export function Game({ onRematch, online = false, p1, p2, gameData, user, resignGame = null, staged = false }) {
 
     const player = !user || user.username == p1 ? 1 : 2;
     const { gameId: gameId } = useParams();
@@ -20,6 +20,9 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user }) {
     const [extraCard, setExtraCard] = useState(null);
     const [lastMoveStart, setLMS] = useState(null);
     const [lastMoveEnd, setLME] = useState(null);
+    const [winnerChange, setWinnerChange] = useState(null);
+    const [loserChange, setLoserChange] = useState(null);
+
     useEffect(() => {
         if (online && gameData) {
             const cards = gameData.Cards || [];
@@ -41,6 +44,7 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user }) {
                     Array.isArray(move) ? { x: move[0], y: move[1] } : move
                 )
             }));
+
             setLMS(gameData.LMS);
             setLME(gameData.LME);
             setWinner(gameData.Winner);
@@ -49,6 +53,8 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user }) {
             setCards1(convertedCards.slice(0, cardsPerPlayer));
             setCards2(convertedCards.slice(cardsPerPlayer, cardsPerPlayer * 2));
             setExtraCard(convertedCards[extraCardIndex]);
+            setWinnerChange(gameData.WinnerChange);
+            setLoserChange(gameData.LoserChange);
         } else if (!online) {
             // Fallback to local game setup
             setPieces([
@@ -116,6 +122,7 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user }) {
     };
 
     const finalizeMove = async (newPosition) => {
+
         const occupyingPiece = pieces.find(p =>
             p.position.x === newPosition[0] && p.position.y === newPosition[1]
         );
@@ -202,26 +209,114 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user }) {
 
         if (online && gameId) {
             try {
-                await updateDoc(doc(db, "Games", gameId), {
-                    Pieces: updatedPieces.map(p => ({
-                        ...p,
-                        position: { x: p.position.x, y: p.position.y }
-                    })),
-                    Cards: [...updatedCards1, ...updatedCards2, card].map(c => ({
-                        ...c,
-                        moves: c.moves.map(m => ({ x: m.x, y: m.y }))
-                    })),
-                    Winner: winnerUpdate ?? "",
-                    State: winnerUpdate ? "finished" : "accepted",
-                    Turn: turner,
-                    LMS: [piece.position.x, piece.position.y],
-                    LME: newPosition,
-                    WinType: winTypeUpdate
-                });
+
+                if (winnerUpdate) {
+                    let winner = "";
+                    let loser = "";
+                    if (winnerUpdate === "Red") {
+                        winner = gameData.Player1;
+                        loser = gameData.Player2;
+                    }
+                    if (winnerUpdate === "Blue") {
+                        loser = gameData.Player1;
+                        winner = gameData.Player2;
+                    }
+
+                    const { winnerChange, loserChange } = await setLevel(winner, loser);
+                    console.log(winnerChange);
+
+                    await updateDoc(doc(db, "Games", gameId), {
+                        Pieces: updatedPieces.map(p => ({
+                            ...p,
+                            position: { x: p.position.x, y: p.position.y }
+                        })),
+                        Cards: [...updatedCards1, ...updatedCards2, card].map(c => ({
+                            ...c,
+                            moves: c.moves.map(m => ({ x: m.x, y: m.y }))
+                        })),
+                        Winner: winnerUpdate ?? "",
+                        State: "finished",
+                        Turn: turner,
+                        LMS: [piece.position.x, piece.position.y],
+                        LME: newPosition,
+                        WinType: winTypeUpdate,
+                        WinnerChange: winnerChange,
+                        LoserChange: loserChange
+                    });
+                } else {
+                    await updateDoc(doc(db, "Games", gameId), {
+                        Pieces: updatedPieces.map(p => ({
+                            ...p,
+                            position: { x: p.position.x, y: p.position.y }
+                        })),
+                        Cards: [...updatedCards1, ...updatedCards2, card].map(c => ({
+                            ...c,
+                            moves: c.moves.map(m => ({ x: m.x, y: m.y }))
+                        })),
+                        Winner: "",
+                        State: "accepted",
+                        Turn: turner,
+                        LMS: [piece.position.x, piece.position.y],
+                        LME: newPosition,
+                        WinType: winTypeUpdate
+                    });
+                }
+
+
+                
+
             } catch (error) {
                 console.error("Failed to update game in Firestore:", error);
             }
         }
+    };
+
+    const eloRating = (winnerLevel, loserLevel, k = 32) => {
+        const expectedWinner = 1 / (1 + Math.pow(10, (loserLevel - winnerLevel) / 400));
+        const expectedLoser = 1 / (1 + Math.pow(10, (winnerLevel - loserLevel) / 400));
+
+        let newWinnerLevel = Math.round(winnerLevel + k * (1 - expectedWinner));
+        let newLoserLevel = Math.round(loserLevel + k * (0 - expectedLoser));
+
+        // Clamp to a minimum of 100
+        newWinnerLevel = Math.max(100, newWinnerLevel);
+        newLoserLevel = Math.max(100, newLoserLevel);
+
+        return { newWinnerLevel, newLoserLevel };
+    };
+
+    
+    const setLevel = async (winnerId, loserId) => {
+        const winnerRef = doc(db, "Users", winnerId);
+        const loserRef = doc(db, "Users", loserId);
+
+        const [winnerSnap, loserSnap] = await Promise.all([
+            getDoc(winnerRef),
+            getDoc(loserRef),
+        ]);
+
+        if (!winnerSnap.exists() || !loserSnap.exists()) {
+            console.error("One or both users do not exist.");
+            return;
+        }
+
+        const winnerLevel = winnerSnap.data().level;
+
+        const loserLevel = loserSnap.data().level;
+
+        const { newWinnerLevel, newLoserLevel } = eloRating(winnerLevel, loserLevel);
+
+        await Promise.all([
+            updateDoc(winnerRef, { level: newWinnerLevel }),
+            updateDoc(loserRef, { level: newLoserLevel }),
+        ]);
+        
+        const cw = newWinnerLevel * 1 - winnerLevel*1;
+        const cl = newLoserLevel * 1 - loserLevel * 1;
+        console.log(cw + " " + cl);
+        return { winnerChange: cw, loserChange: cl };
+
+
     };
 
     const onSelectCard = (card) => {
@@ -249,7 +344,13 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user }) {
     const [menuOpen, setMenuOpen] = useState(false);
 
     const handlers = useSwipeable({
-        onSwipedRight: () => setMenuOpen(false),
+        onSwipedRight: (eventData) => {
+            setMenuOpen(false)
+            if (eventData.initial[0] < 60 && online) {
+                // Only open if swipe starts from right edge
+                navigate('/active');
+            }
+        },
         onSwipedLeft: (eventData) => {
             console.log(eventData.initial[1] - window.innerWidth);
             if (eventData.initial[0] > window.innerWidth - 60) {
@@ -261,6 +362,45 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user }) {
         trackTouch: true,
         trackMouse: true
     });
+    const resign = async () => {
+        if (window.confirm("Are you sure you want to resign?")) {
+            let winner = "";
+            let loser = "";
+            let winnerUpdate = "";
+            let winTypeUpdate = "Resignation";
+
+            if (player === 2) {
+                winnerUpdate = "Red";
+                winner = gameData.Player1;
+                loser = gameData.Player2;
+                setWinner("Red");
+            }
+            if (player === 1) {
+                winnerUpdate = "Blue";
+                loser = gameData.Player1;
+                winner = gameData.Player2;
+                setWinner("Blue");
+            }
+
+            setWinType(winTypeUpdate);
+
+            const { winnerChange, loserChange } = await setLevel(winner, loser);
+
+            await updateDoc(doc(db, "Games", gameId), {
+                Winner: winnerUpdate ?? "",
+                State: "finished",
+                WinType: winTypeUpdate,
+                WinnerChange: winnerChange,
+                LoserChange: loserChange
+            });
+        }
+    };
+
+    const quit = async () => {
+        if (window.confirm("Are you sure you want to Quit?")) {
+            navigate("/");
+        }
+    };
 
     return (
         <div style={{ display: "contents" }} className="gameWrapper" {...handlers} >
@@ -273,39 +413,39 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user }) {
                     <label>Board Flips: </label><button onClick={() => setBoardFlips(!boardFlips)} className={`${boardFlips ? "on" : "off"}`}>{boardFlips ? "On" : "Off"}</button>
                 </div>
                 <div className="auth-buttons">
-                    <button onClick={() => navigate("/")}>Quit</button>
+                    <button onClick={() => quit()}>Quit Game</button>
                 </div>
             </div>}
             {winner && <div className="popup">
                 <h1>{winner} Wins!</h1>
                 {winType && <p>By {winType}</p>}
-                <img src={`/queen_${winner?.toLowerCase() || "red"}.png`} />
+                {winner && winnerChange && ((winner == "Red" && player == 1) || (winner == "Blue" && player == 1)) && <h2>+ {winnerChange} <img width="24" height="24" src="../icons/trophy.png" /></h2>}
+                {winner && loserChange && ((winner == "Red" && player == 2) || (winner == "Blue" && player == 2)) && <h2>- {-1*loserChange} <img width="24" height="24" src="../icons/trophy.png" /></h2>}
+                <img className="winner-bee" src={`/icons/bees/queen_${winner?.toLowerCase() || "red"}.png`} />
                 <div className="auth-buttons">
                     {!online && <button onClick={() => onRematch()} >Rematch</button>}
-                    <button onClick={() => navigate("/")}>Quit</button>
+                    <button onClick={() => navigate("/")}>Exit</button>
                 </div>
             </div>}
-            <div className={`game ${boardFlips ? "flips" : ""}${online ? " online-game" : ""}${player == 1 ? " p1" : " p2"}${turn == 1 ? " t1" : " t2"}`}>
-
-                <PlayerHand extraCard={extraCard} player={player} online={online} turn={turn} top={true} selectedCardIndex={card} cards={cards1} opponent={online ? player == 2 || turn == 2 : turn != 1} onSelectCard={onSelectCard} />
-                <Confirmation cancel={cancel} confirm={confirm} top={true} good={(turn == 1) && isConfirming && previewPosition && piece} />
+            <div className={`game${winner ? " gameOver" : ""}${boardFlips ? " flips" : ""}${online ? " online-game" : ""}${player == 1 ? " p1" : " p2"}${turn == 1 ? " t1" : " t2"}`}>
+                {!staged && <PlayerHand extraCard={extraCard} player={player} online={online} turn={turn} top={true} selectedCardIndex={card} cards={cards1} opponent={online ? player == 2 || turn == 2 : turn != 1} onSelectCard={onSelectCard} />}
+                {!staged && <Confirmation cancel={cancel} confirm={confirm} top={true} onlineHide={online && player == 2} good={(turn == 1) && isConfirming && previewPosition && piece} />}
                 <GameBoard online={online} lms={lastMoveStart} lme={lastMoveEnd} turn={turn} onMove={previewMove} card={card} piece={piece} previewPosition={previewPosition} onSelectPiece={onSelectPiece} selectedPiece={piece} coords={coords} pieces={pieces} online={online} p={player} />
-                <Confirmation cancel={cancel} confirm={confirm} good={(turn == 2 || (online && player == 2)) && isConfirming && previewPosition && piece} />
-                <PlayerHand extraCard={extraCard} player={player} online={online} turn={turn} top={false} selectedCardIndex={card} cards={cards2} opponent={online ? player == 1 || turn == 1 : turn != 2} onSelectCard={onSelectCard} />
-
-
+                {!staged && <Confirmation cancel={cancel} confirm={confirm} onlineHide={online && player == 1} good={(turn == 2 || (online && player == 2)) && isConfirming && previewPosition && piece} />}
+                {!staged && <PlayerHand extraCard={extraCard} player={player} online={online} turn={turn} top={false} selectedCardIndex={card} cards={cards2} opponent={online ? player == 1 || turn == 1 : turn != 2} onSelectCard={onSelectCard} />}
             </div>
-            <div className="footer">
+            {online && !staged  && <div className="page-footer">
                 <div>
-                    {/*<img src="flag.png" />Resign*/}
                 </div>
-                <div onClick={() => navigate('/')}>
-                    {/*<img src="flag.png" />Exit*/}
+                <div >
+                    <div className="footer-button" onClick={() => resign()}>
+                        <img width="20" src="/icons/flag.png" />
+                        
+                    </div>
                 </div>
                 <div>
-                    {/*<img src="person.png" />Profile*/}
                 </div>
-            </div>
+            </div>}
         </div>
     )
 }

@@ -1,7 +1,10 @@
 import React from 'react';
 
-export const Confirmation = ({ cancel, confirm, good, top }) => {
+export const Confirmation = ({ cancel, confirm, good, top, onlineHide }) => {
 
+    if (onlineHide) {
+        return null;
+    }
     return (
         <div className={`confirmation-box${top ? " top" : ""}`}>
                 <div className={`button-holder${!good ? " hidden" : ""}`}>

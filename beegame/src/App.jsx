@@ -8,12 +8,14 @@ import { Home } from './components/Home';
 import { Friends } from './components/Friends';
 import { Game } from './components/Game';
 import { OnlineGame } from './components/OnlineGame';
+import { ActiveGames } from './components/ActiveGames';
 
 import './App.css';
 
 function App() {
     const [user, setUser] = useState(null);
     const [userData, setUserData] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
 
 
     const login = async () => {
@@ -65,8 +67,10 @@ function App() {
     };
 
     const logout = async () => {
-        await signOut(auth);
-        setUser(null);
+        if (window.confirm("Are you sure you want to log out?")) {
+            await signOut(auth);
+            setUser(null);
+        }
     };
 
     const [gameKey, setGameKey] = useState(0);
@@ -82,6 +86,7 @@ function App() {
                 setUser(null);
                 setUserData(null);
             }
+            setIsLoading(false);
         });
 
         // Cleanup listener on unmount
@@ -106,23 +111,37 @@ function App() {
         };
     }, []);
 
+    if (isLoading) {
+        return null;
+    }
     return (
         <Router>
-            <div className="auth-buttons homescreen">
-                {user ? (
-                    null) : (
-                    <>
-                        <img src="icon512.png" />
-                        <h1>Go Bee</h1>
+            
+            {user ? (
+                null) : (
+                    <div className="page">
+                        <div className="page-header page-global">
+                            <div></div>
+                            <div className="page-logo">
+                                <img width="32" height="32" src="/icons/icon512.png" alt="Go Bee" />
+                                <h1>Go Bee</h1>
+                            </div>
+                            <div></div>
+                        </div>
+                    <div className="auth-buttons homescreen">
                         <button onClick={login}>Google Sign In</button>
-                    </>
-                )}
-            </div>
+                        </div>
+                        <div>
+                        </div>
+                    </div>
+            )}
+            
             {true || mode == "s" ?
                 (<Routes>
                     <Route path="/game" element={user ? <Game key={gameKey} onRematch={rematch} user={user} /> : <Navigate to="/" />} />
                     <Route path="/game/:gameId" element={user ? <OnlineGame key={gameKey} user={user} onRematch={rematch} /> : <Navigate to="/" />} />
                     <Route path="/friends" element={user ? <Friends user={user} /> : <Navigate to="/" />} />
+                    <Route path="/active" element={user ? <ActiveGames user={user} /> : <Navigate to="/" />} />
                     <Route path="/" element={user ? <Home user={user} logout={logout} /> : <Navigate to="/" />} />
                     <Route path="*" element={<Navigate to="/" />} />
                 </Routes>) : (

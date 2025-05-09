@@ -2,11 +2,7 @@ import React from 'react';
 import Card from './Card';
 
 const PlayerHand = ({ cards, selectedCardIndex, onSelectCard, opponent, top, extraCard, turn, player, online }) => {
-    console.log(top);
-    console.log(player);
-    console.log(turn);
-    console.log(opponent);
-    console.log("_______________");
+
     return (
         <div className={`player-hand${top ? " top" : ""}`}>
             {((top && turn == 1) || (!top && turn == 2)) && <>

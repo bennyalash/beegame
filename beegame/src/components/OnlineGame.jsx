@@ -1,12 +1,18 @@
-import { useState, useEffect } from 'react';
-import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
+import { useState, useEffect, useRef } from 'react';
+import { doc, onSnapshot, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+
 import { Game } from './Game';
 export function OnlineGame({user }) {
     const { gameId } = useParams();
-    const [gameData, setGameData] = useState(null);
+    const navigate = useNavigate();
 
+    const [gameData, setGameData] = useState(null);
+    const gameDataRef = useRef(null);
+    useEffect(() => {
+        gameDataRef.current = gameData;
+    }, [gameData]);
     useEffect(() => {
         if (!gameId) return;
 
@@ -16,16 +22,42 @@ export function OnlineGame({user }) {
             if (gameDoc.exists()) {
                 setGameData(gameDoc.data());
             } else {
-                console.error("Game not found");
+                navigate('/friends');
             }
         }, (error) => {
             console.error("Error fetching game data:", error);
         });
 
-        // Clean up the listener when component unmounts
-        return () => unsubscribe();
+        const handleBeforeUnload = async () => {
+            const data = gameDataRef.current;
+            if (
+                data?.State === "waiting" &&
+                data?.Player1 === user.id
+            ) {
+                try {
+                    await deleteDoc(gameRef);
 
-    }, [gameId]);
+                } catch (e) {
+                    console.error("Failed to cancel game on unload", e);
+                }
+            }
+        };
+
+        const onUnload = () => {
+            handleBeforeUnload();
+        };
+
+        window.addEventListener("beforeunload", onUnload);
+
+        return () => {
+            window.removeEventListener("beforeunload", onUnload);
+            handleBeforeUnload(); // Still uses up-to-date ref
+            unsubscribe();
+        };
+    }, [gameId, user.id]);
+
+
+
 
     const startGame = async () => {
         if (gameData?.State === "accepted") {
@@ -34,17 +66,23 @@ export function OnlineGame({user }) {
         }
     };
 
+
+
     return (
         <div className="game-room">
             
             {gameData ? (
                 <>
-                    {gameData.State === "waiting" && <><h1>Game Room</h1><p>Player 1: {gameData.P1Name}</p>
-                    <p>Player 2: {gameData.P2Name || "Waiting for Player 2..."}</p>
-                    <p>Status: {gameData.State}</p>
-
-                     <p>Waiting for the other player to accept...</p></>}
-                    {gameData.State !== "waiting" && (
+                    {gameData.State === "waiting" && <>
+                        <div className="game-room-popup">
+                        <h1>Game Room</h1>
+                        
+                            <p>Waiting for {gameData.P2Name || "Other Player"}...</p>
+                            <br></br>
+                            <button onClick={() => navigate('/friends')}>Return</button>
+                        </div>
+                    </>}
+                    {gameData.State !== "waiting" && gameData.State !== "canceled" && (
                         <Game online={true} p1={gameData.P1Name} p2={gameData.P2Name} gameData={gameData} user={user} />
                     )}
                 </>

@@ -62,7 +62,7 @@
     display:contents;
 }
 .game-room p{
-    color:black;
+    color:var(--dull1);
     font-family:'Rubik';
     font-size:18px;
 }
