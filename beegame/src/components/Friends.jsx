@@ -146,13 +146,33 @@ export function Friends({ logout, user }) {
     };
     const sendChallenge = async (challengedUid, challengedName) => {
         try {
-            const defaultCards = [
+            
+
+            const cards = [
                 { name: "1", moves: [{ x: 0, y: -2 }, { x: 0, y: 1 }] },
                 { name: "2", moves: [{ x: -2, y: 0 }, { x: -1, y: 1 }, { x: 1, y: 0 }, { x: 2, y: -2 }] },
                 { name: "3", moves: [{ x: 0, y: 1 }, { x: 1, y: -1 }, { x: -1, y: 0 }] },
                 { name: "4", moves: [{ x: 0, y: -1 }, { x: -1, y: 1 }, { x: 1, y: 0 }] },
-                { name: "5", moves: [{ x: 0, y: -1 }, { x: 2, y: -1 }, { x: -2, y: 1 }] }
+                { name: "5", moves: [{ x: 0, y: -1 }, { x: 2, y: -1 }, { x: -2, y: 1 }] },
+                { name: "6", moves: [{ x: -2, y: 1 }, { x: -1, y: 0 }, { x: 1, y: -1 }, { x: 2, y: -1 }] },
+                { name: "7", moves: [{ x: -1, y: 0 }, { x: 1, y: -1 }, { x: 0, y: -1 }] },
+                { name: "8", moves: [{ x: 0, y: -1 }, { x: 0, y: 1 }] },
+                { name: "9", moves: [{ x: -1, y: 0 }, { x: -1, y: 1 }, { x: 1, y: -1 }, { x: 1, y: 0 }] },
+                { name: "10", moves: [{ x: -1, y: -1 }, { x: 1, y: -2 }] }
             ];
+
+            function shuffle(array) {
+                const arr = [...array];
+                for (let i = arr.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                }
+                return arr;
+            }
+
+            // Shuffle and pick the first 5
+            const shuffled = shuffle(cards);
+            const defaultCards = shuffled.slice(0, 5);
 
             const defaultPieces = [
                 { id: 'p1-queen', player: 1, type: 'queen', position: { x: 0, y: -2 } },
