@@ -152,14 +152,14 @@ body:has(.youtube) {
         justify-content: flex-end;
     }
 .gameWrapper:has(.popup:not(.menu)) .board, .gameOver.board {
-    padding-top: 40px;
+    height:500px;
 }
 .gameWrapper:has(.popup:not(.menu)) .game.online-game.p1, .gameOver.game.online-game.p1 {
-    padding-bottom: 40px;
+
 }
 .gameWrapper:has(.popup:not(.menu)) .confirmation-box, .gameOver .confirmation-box {
     height: 80px;
-    max-height:80px;
+    display:none;
 }
 
     .game.flips:has(.top .ignore) {
