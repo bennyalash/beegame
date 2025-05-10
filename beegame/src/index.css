@@ -648,6 +648,7 @@ font-size: 42px;
 .popup .winner-bee {
     width: 75px;
     height: 75px;
+    display:none;
     border-radius: 100%;
     margin: 20px 0;
     animation: float 3s ease-in-out infinite;
