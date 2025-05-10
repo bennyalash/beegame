@@ -386,16 +386,16 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user, resign
             let winTypeUpdate = "Resignation";
 
             if (player === 2) {
-                winnerUpdate = "Blue";
+                winnerUpdate = "Red";
                 winner = gameData.Player1;
                 loser = gameData.Player2;
-                setWinner("Blue");
+                setWinner("Red");
             }
             if (player === 1) {
-                winnerUpdate = "Red";
+                winnerUpdate = "Blue";
                 loser = gameData.Player1;
                 winner = gameData.Player2;
-                setWinner("Red");
+                setWinner("Blue");
             }
 
             setWinType(winTypeUpdate);
@@ -446,8 +446,8 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user, resign
             {winner && <div className="popup">
                 <h1>{winner} Wins!</h1>
                 {winType && <p>By {winType}</p>}
-                {winner && winnerChange && ((winner == "Red" && player == 2) || (winner == "Blue" && player == 1)) && <h2>+ {winnerChange} <img width="24" height="24" src="../icons/trophy.png" /></h2>}
-                {winner && loserChange && ((winner == "Red" && player == 1) || (winner == "Blue" && player == 2)) && <h2>- {-1*loserChange} <img width="24" height="24" src="../icons/trophy.png" /></h2>}
+                {winner && winnerChange && ((winner == "Red" && player == 1) || (winner == "Blue" && player == 2)) && <h2>+ {winnerChange} <img width="24" height="24" src="../icons/trophy.png" /></h2>}
+                {winner && loserChange && ((winner == "Red" && player == 2) || (winner == "Blue" && player == 1)) && <h2>- {-1*loserChange} <img width="24" height="24" src="../icons/trophy.png" /></h2>}
                 <img className="winner-bee" src={`/icons/bees/queen_${winner?.toLowerCase() || "red"}.png`} />
                 <div className="auth-buttons">
 {/*                    {!online && <button onClick={() => onRematch()} >Rematch</button>}
