@@ -91,12 +91,8 @@ export function Home({ logout, user }) {
             <p>{user.username}</p>
             </div>
         <div className="auth-buttons homescreen">
-                <button onClick={() => navigate('/friends')}>Play</button>
                 <button onClick={() => navigate('/friends')}>Friends</button>
-                
-                <button onClick={() => navigate('/active')}>Active Games</button>
-                <button onClick={() => navigate('/recent')}>Recent Games</button>
-                <br></br>
+                <button onClick={() => navigate('/active')}>My Games</button>
                 <button onClick={() => navigate('/game')}>Pass & Play</button>
                 <div className="button-holder"><button onClick={() => logout()}>Logout</button></div>
                 {game && state == "waiting" &&

@@ -46,7 +46,9 @@ body {
     overflow: hidden;
     flex-direction: column;
     position: relative;
-    background: var(--grey3);
+    background-color: var(--grey3);
+    /*background-image: url("/images/bee1.svg");*/
+    background-repeat: repeat;
 }
 h1{
     font-weight:normal;
