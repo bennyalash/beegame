@@ -12,6 +12,8 @@
     <None Remove="public\vite.svg" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="netlify\functions\" />
     <Folder Include="public\" />
+    <Folder Include="src\functions\" />
   </ItemGroup>
 </Project>

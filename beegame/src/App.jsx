@@ -10,10 +10,17 @@ import { Game } from './components/Game';
 import { OnlineGame } from './components/OnlineGame';
 import { ActiveGames } from './components/ActiveGames';
 import { RecentGames } from './components/RecentGames';
+import { registerPush } from './functions/index';
+
 
 import './App.css';
 
 function App() {
+
+    useEffect(() => {
+        registerPush();
+    }, []);
+
     const [user, setUser] = useState(null);
     const [userData, setUserData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
