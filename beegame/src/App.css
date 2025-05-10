@@ -142,28 +142,7 @@ body:has(.youtube) {
     justify-content: space-between;
 }
 
-.gameWrapper:has(.popup:not(.menu)) .player-hand, .gameOver .player-hand {
-    display: none;
-}
-.gameWrapper:has(.popup:not(.menu)) .game, .gameOver.game {
-    /*justify-content: center;
-    padding-bottom: 350px;*/
-    justify-content: flex-start;
-}
-    .gameWrapper:has(.popup:not(.menu)) .game.online-game.p1, .gameOver.game.online-game.p1 {
-        justify-content: flex-end;
-        /*padding-top: 350px;*/
-    }
-.gameWrapper:has(.popup:not(.menu)) .board, .gameOver.board {
-    /*height:50%;*/
-}
-.gameWrapper:has(.popup:not(.menu)) .game.online-game.p1, .gameOver.game.online-game.p1 {
 
-}
-.gameWrapper:has(.popup:not(.menu)) .confirmation-box, .gameOver .confirmation-box {
-    height: 80px;
-    display:none;
-}
 
     .game.flips:has(.top .ignore) {
         transform: rotate(180deg);
