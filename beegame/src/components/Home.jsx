@@ -92,6 +92,7 @@ export function Home({ logout, user }) {
             </div>
         <div className="auth-buttons homescreen">
                 <button onClick={() => navigate('/friends')}>Play</button>
+                <button onClick={() => navigate('/friends')}>Friends</button>
                 
                 <button onClick={() => navigate('/active')}>Active Games</button>
                 <br></br>

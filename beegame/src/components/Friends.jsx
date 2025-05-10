@@ -277,7 +277,7 @@ export function Friends({ logout, user }) {
                 </div>
                 <div className="page-section">
                     <h2>Friends{userData?.friends.length > 0 && <span className="friend-count">{userData?.friends.length || 0}</span>}</h2>
-                    {userData?.friends.length > 0 ?
+                    {userData?.friends?.length > 0 ?
                         (<div className="friends">
                             {(userData?.friends || []).map(friendid => {
                                 const friend = allUsers.find(u => u.id === friendid);
@@ -300,7 +300,7 @@ export function Friends({ logout, user }) {
             
             <div className="page-section">
                 <h2>Friend Requests</h2>
-                    {userData?.friendRequestsReceived.length > 0 ?
+                    {userData?.friendRequestsReceived?.length > 0 ?
                         (<div className="friends requests">
                             {(userData?.friendRequestsReceived || []).map(requestid => {
                                 const requester = allUsers.find(u => u.id === requestid);

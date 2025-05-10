@@ -11,7 +11,7 @@
 }
 .board {
     background: transparent;
-    height: 350px;
+    height: 450px;
     flex: 1;
 }
 .empty{
@@ -42,7 +42,7 @@
     /*padding-top:25px;*/
 }
 .page-footer {
-    padding-bottom: 10px;
+    padding-bottom: 20px;
 }
 .page-global h1 {
     font-size: 24px;

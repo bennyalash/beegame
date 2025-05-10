@@ -114,7 +114,7 @@ function App() {
     if (isLoading) {
         return null;
     }
-    if (mode != "s") {
+    if (mode != "s" && false) {
         return (
             <div id="addToHomeScreenMessage" onClick={() => alert("For best use, add this app to your home screen.")}>
                 To play Go Bee, add this app to your home screen.<br></br>
