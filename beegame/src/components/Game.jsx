@@ -424,8 +424,8 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user, resign
             {online && !staged && <div className="page-global page-header">
                 
                 <div>
-                    <div className="footer-button" onClick={() => resign()}>
-                        <img width="20" src="/icons/flag.png" />
+                    <div className="footer-button" onClick={() => navigate("/active")}>
+                        <img width="20" src="/icons/exit.png" />
 
                     </div>
                 </div>
@@ -435,6 +435,10 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user, resign
                     </div>
                 </div>
                 <div>
+                    <div className="footer-button" onClick={() => resign()}>
+                        <img width="20" src="/icons/flag.png" />
+
+                    </div>
                 </div>
             </div>}
             {!winner && !online && <div className={`popup menu ${menuOpen ? "open" : "closed"}`}>

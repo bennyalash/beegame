@@ -90,9 +90,9 @@ export function Home({ logout, user }) {
                 <div className="trophies"><img width="20" height="20" src="icons/trophy.png" />{userLevel}</div>
             <p>{user.username}</p>
             </div>
-        <div className="auth-buttons homescreen">
+            <div className="auth-buttons homescreen">
+                <button onClick={() => navigate('/active')}>Play</button>
                 <button onClick={() => navigate('/friends')}>Friends</button>
-                <button onClick={() => navigate('/active')}>My Games</button>
                 <button onClick={() => navigate('/game')}>Pass & Play</button>
                 <div className="button-holder"><button onClick={() => logout()}>Logout</button></div>
                 {game && state == "waiting" &&
