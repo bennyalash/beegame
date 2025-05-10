@@ -386,16 +386,16 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user, resign
             let winTypeUpdate = "Resignation";
 
             if (player === 2) {
-                winnerUpdate = "Red";
+                winnerUpdate = "Blue";
                 winner = gameData.Player1;
                 loser = gameData.Player2;
-                setWinner("Red");
+                setWinner("Blue");
             }
             if (player === 1) {
-                winnerUpdate = "Blue";
+                winnerUpdate = "Red";
                 loser = gameData.Player1;
                 winner = gameData.Player2;
-                setWinner("Blue");
+                setWinner("Red");
             }
 
             setWinType(winTypeUpdate);
@@ -439,8 +439,8 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user, resign
                 {winner && loserChange && ((winner == "Red" && player == 2) || (winner == "Blue" && player == 2)) && <h2>- {-1*loserChange} <img width="24" height="24" src="../icons/trophy.png" /></h2>}
                 <img className="winner-bee" src={`/icons/bees/queen_${winner?.toLowerCase() || "red"}.png`} />
                 <div className="auth-buttons">
-                    {!online && <button onClick={() => onRematch()} >Rematch</button>}
-                    <button onClick={() => navigate("/")}>Exit</button>
+{/*                    {!online && <button onClick={() => onRematch()} >Rematch</button>}
+*/}                    <button onClick={() => navigate("/")}>Exit</button>
                 </div>
             </div>}
             <div className={`game${winner ? " gameOver" : ""}${boardFlips ? " flips" : ""}${online ? " online-game" : ""}${player == 1 ? " p1" : " p2"}${turn == 1 ? " t1" : " t2"}`}>
