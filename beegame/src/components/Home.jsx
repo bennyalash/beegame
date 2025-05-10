@@ -95,6 +95,7 @@ export function Home({ logout, user }) {
                 <button onClick={() => navigate('/friends')}>Friends</button>
                 
                 <button onClick={() => navigate('/active')}>Active Games</button>
+                <button onClick={() => navigate('/recent')}>Recent Games</button>
                 <br></br>
                 <button onClick={() => navigate('/game')}>Pass & Play</button>
                 <div className="button-holder"><button onClick={() => logout()}>Logout</button></div>

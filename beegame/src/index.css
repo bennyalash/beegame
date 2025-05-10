@@ -27,6 +27,10 @@
     flex-direction: column;
     justify-content: space-between;
 }
+.gameWrapper .page-global{
+    /*padding-bottom:0;
+    margin-bottom:-5px;*/
+}
 .page-global {
     background: var(--grey4);
     display: grid;
@@ -54,10 +58,9 @@
     z-index: 3;
     width: calc(100% - 20px);
     left: 0;
-    background: var(--grey5);
+    background: var(--grey4);
     padding: 10px;
-    padding-top:35px;
-    border-radius:10px;
+    border-radius:0 0 10px 10px;
     display: flex;
     justify-content: space-between;
 }
@@ -110,7 +113,7 @@
     gap: 2px;
 }
 .page-global p {
-    font-size: 24px;
+    font-size: 20px;
     color: var(--white);
     margin: 0;
     text-align: right;
@@ -134,10 +137,11 @@
     bottom: 50%;
     left: 50%;
     transform: translate(-50%, 50%);
-    background-color: #ffffff;
+    background-color: var(--white);
     border: 1px solid #000000;
     padding: 20px;
     border-radius: 5px;
+    color:var(--grey4);
     font-size: 20px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     z-index: 1000;
@@ -253,7 +257,7 @@ font-size: 42px;
     }
 .card {
     aspect-ratio: 1 / 1;
-    background: var(--grey3);
+    background: var(--grey4);
     cursor: pointer;
     transition: 0.0s ease;
     border-radius: 10px;
@@ -333,8 +337,8 @@ font-size: 42px;
     color: black;
     letter-spacing: 1px;
     font-size: 20px;
-    background: var(--grey4);
-    padding-bottom: 20px;
+    /*background: var(--grey4);*/
+    padding-bottom: 25px;
 }
 
 .homescreen h1{
@@ -351,9 +355,9 @@ font-size: 42px;
     color: #fff2cc;
     border-color: #fff2cc !important;
 }
-    .player-hand.top{
-        
-    }
+.player-hand.top {
+
+}
 .top {
     transform: rotate(180deg);
 }
@@ -365,17 +369,21 @@ font-size: 42px;
     opacity: 1;
 }*/
 .min-game-board{
-    width:40%;
+    width:42%;
     aspect-ratio: 1/1;
     display:flex;
     background:var(--grey4);
     border-radius:20px;
     overflow:hidden;
 }
+.min-game-board .game{
+    background:var(--grey4);
+}
     .min-game-board.flip-staged{
         transform:rotate(180deg);
     }
     .game-list {
+        margin-top:5px;
     }
 .game-list-item {
     font-family: 'Rubik';
@@ -388,23 +396,22 @@ font-size: 42px;
         text-align: left;
         flex: 1;
         display: flex;
-        justify-content: space-around;
+        justify-content: space-evenly;
         flex-direction: column;
     }
     .game-list-item .opponent .username{
         font-weight:600;
-        margin-bottom:10px;
+        margin-bottom:5px;
     }
     .min-game-board .game {
         justify-content: center;
     }
 .player-hand .ignore {
-    background: var(--dull2);
+    filter: grayscale(1);
+    opacity:0.5;
 }
-.player-hand .ignore .card-hex, .player-hand:has(.selected) .ignore:not(.selected) .card-hex {
-    filter: grayscale(0);
-    opacity: 1;
-}
+   
+
 .hex-tile, .card-hex {
     position: absolute;
     width: 77px;
@@ -596,6 +603,9 @@ font-size: 42px;
     align-items: center;
     font-size:12px;
 }
+.empty button{
+    width:100%;
+}
 .popup {
     position: absolute;
     bottom: 0;
@@ -608,6 +618,60 @@ font-size: 42px;
     border-radius: 50px 50px 0 0;
     font-family: "Rubik";
     animation: slideUp 1s ease-out forwards;
+}
+.recent-game-list-item {
+    padding: 10px 0;
+    border-top: 2px solid rgba(0, 0, 0, 0.1);
+    color: var(--white);
+}
+.recent-game-list-item .opponent {
+    display: grid;
+    grid-template-columns:3fr 10fr 8fr  4fr;
+    width: 100%;
+}
+    .recent-game-list-item .opponent .info, .recent-game-list-item .reason {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 5px;
+        color: var(--white);
+        font-size: 14px;
+        font-family: 'Rubik';
+    }
+        .recent-game-list-item .reason{
+            color:var(--dull1);
+        }
+        .recent-game-list-item .opponent .info .trophies {
+            font-size: 14px;
+            font-weight: 400;
+        }
+.result .winorlose {
+    background: black;
+    aspect-ratio: 1 / 1;
+    width: 24px;
+    font-size:20px;
+    font-weight:800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+.result .win {
+    background: #43c76b;
+}
+.result .lose {
+    background: #e15858;
+}
+.trophyChange {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size:20px;
+    letter-spacing:0.5px;
+    gap:2px;
+}
+.trophyChange img{
+    margin-bottom:2px;
 }
 @keyframes slideUp {
     from {

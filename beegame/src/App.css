@@ -121,7 +121,7 @@ body:has(.youtube) {
     zoom: 0.4;
     pointer-events:none;
 }
-.min-game-board *{
+.min-game-board .game *{
     pointer-events: none !important;
 }
 .header {
@@ -138,7 +138,7 @@ body:has(.youtube) {
     display: flex;
     align-items: center;
     flex-direction: column;
-    background: var(--grey4);
+    background: var(--grey3);
     justify-content: space-between;
 }
 

@@ -9,6 +9,7 @@ import { Friends } from './components/Friends';
 import { Game } from './components/Game';
 import { OnlineGame } from './components/OnlineGame';
 import { ActiveGames } from './components/ActiveGames';
+import { RecentGames } from './components/RecentGames';
 
 import './App.css';
 
@@ -114,9 +115,9 @@ function App() {
     if (isLoading) {
         return null;
     }
-    if (mode != "s" && false) {
+    if (mode != "s") {
         return (
-            <div id="addToHomeScreenMessage" onClick={() => alert("For best use, add this app to your home screen.")}>
+            <div id="addToHomeScreenMessage">
                 To play Go Bee, add this app to your home screen.<br></br>
                 <br></br>
                 Tap the share icon in your browser and then "Add to Home Screen" or "Install App"
@@ -151,6 +152,7 @@ function App() {
                     <Route path="/game/:gameId" element={user ? <OnlineGame key={gameKey} user={user} onRematch={rematch} /> : <Navigate to="/" />} />
                     <Route path="/friends" element={user ? <Friends user={user} /> : <Navigate to="/" />} />
                     <Route path="/active" element={user ? <ActiveGames user={user} /> : <Navigate to="/" />} />
+                    <Route path="/recent" element={user ? <RecentGames user={user} /> : <Navigate to="/" />} />
                     <Route path="/" element={user ? <Home user={user} logout={logout} /> : <Navigate to="/" />} />
                     <Route path="*" element={<Navigate to="/" />} />
                 </Routes>) : (

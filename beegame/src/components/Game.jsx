@@ -407,7 +407,8 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user, resign
                 State: "finished",
                 WinType: winTypeUpdate,
                 WinnerChange: winnerChange,
-                LoserChange: loserChange
+                LoserChange: loserChange,
+                End: new Date()
             });
         }
     };
@@ -420,8 +421,18 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user, resign
 
     return (
         <div style={{ display: "contents" }} className="gameWrapper" {...handlers} >
-            <div className="header">
-            </div>
+            {online && !staged && <div className="page-global page-header">
+                <div>
+                </div>
+                <div >
+                    <div className="footer-button" onClick={() => resign()}>
+                        <img width="20" src="/icons/flag.png" />
+
+                    </div>
+                </div>
+                <div>
+                </div>
+            </div>}
             {!winner && !online && <div className={`popup menu ${menuOpen ? "open" : "closed"}`}>
                 <h1>Settings</h1>
                 <br></br>
@@ -435,8 +446,8 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user, resign
             {winner && <div className="popup">
                 <h1>{winner} Wins!</h1>
                 {winType && <p>By {winType}</p>}
-                {winner && winnerChange && ((winner == "Red" && player == 1) || (winner == "Blue" && player == 1)) && <h2>+ {winnerChange} <img width="24" height="24" src="../icons/trophy.png" /></h2>}
-                {winner && loserChange && ((winner == "Red" && player == 2) || (winner == "Blue" && player == 2)) && <h2>- {-1*loserChange} <img width="24" height="24" src="../icons/trophy.png" /></h2>}
+                {winner && winnerChange && ((winner == "Red" && player == 2) || (winner == "Blue" && player == 1)) && <h2>+ {winnerChange} <img width="24" height="24" src="../icons/trophy.png" /></h2>}
+                {winner && loserChange && ((winner == "Red" && player == 1) || (winner == "Blue" && player == 2)) && <h2>- {-1*loserChange} <img width="24" height="24" src="../icons/trophy.png" /></h2>}
                 <img className="winner-bee" src={`/icons/bees/queen_${winner?.toLowerCase() || "red"}.png`} />
                 <div className="auth-buttons">
 {/*                    {!online && <button onClick={() => onRematch()} >Rematch</button>}
@@ -450,18 +461,7 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user, resign
                 {!staged && <Confirmation cancel={cancel} confirm={confirm} onlineHide={online && player == 1} good={(turn == 2 || (online && player == 2)) && isConfirming && previewPosition && piece} />}
                 {!staged && <PlayerHand extraCard={extraCard} player={player} online={online} turn={turn} top={false} selectedCardIndex={card} cards={cards2} opponent={online ? player == 1 || turn == 1 : turn != 2} onSelectCard={onSelectCard} />}
             </div>
-            {online && !staged  && <div className="page-footer">
-                <div>
-                </div>
-                <div >
-                    <div className="footer-button" onClick={() => resign()}>
-                        <img width="20" src="/icons/flag.png" />
-                        
-                    </div>
-                </div>
-                <div>
-                </div>
-            </div>}
+            
         </div>
     )
 }
