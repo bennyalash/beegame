@@ -27,9 +27,14 @@
     flex-direction: column;
     justify-content: space-between;
 }
-.gameWrapper .page-global{
+.gameWrapper .page-global {
     /*padding-bottom:0;
     margin-bottom:-5px;*/
+    grid-template-columns: 1fr 5fr 1fr;
+}
+.turn-indicator{
+    font-size:24px;
+    color:var(--white);
 }
 .page-global {
     background: var(--grey4);

@@ -422,12 +422,16 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user, resign
     return (
         <div style={{ display: "contents" }} className="gameWrapper" {...handlers} >
             {online && !staged && <div className="page-global page-header">
+                
                 <div>
-                </div>
-                <div >
                     <div className="footer-button" onClick={() => resign()}>
                         <img width="20" src="/icons/flag.png" />
 
+                    </div>
+                </div>
+                <div>
+                    <div className="turn-indicator">
+                        {turn == player ? "Your Turn" : "Waiting for Opponent"}
                     </div>
                 </div>
                 <div>
