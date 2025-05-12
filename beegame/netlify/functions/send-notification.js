@@ -1,7 +1,7 @@
 const webPush = require('web-push');
 require('dotenv').config();
 const admin = require('firebase-admin');
-const serviceAccount = require("./service-account.json");
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
 // Set the VAPID keys from environment variables
 webPush.setVapidDetails(
