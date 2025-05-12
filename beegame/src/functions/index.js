@@ -8,7 +8,7 @@ export async function subscribeToPushNotifications(user) {
             const permission = await Notification.requestPermission();
 
             if (permission !== 'granted') {
-                return true;
+                return permission;
             }
 
             let subscription = await registration.pushManager.getSubscription();
@@ -19,10 +19,10 @@ export async function subscribeToPushNotifications(user) {
                     applicationServerKey: VAPID_PUBLIC_KEY,
                 });
             }
-            console.log(permission);
+
             await sendSubscriptionToBackend(user.id, subscription);
 
-            return false;
+            return permission;
 
         } catch (err) {
             console.error('Push notification subscription failed:', err);

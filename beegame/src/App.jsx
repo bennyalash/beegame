@@ -29,13 +29,18 @@ function App() {
         const subscribe = async () => {
             if (user) {
                 const result = await subscribeToPushNotifications(user); // Assuming this returns true/false
-
+                console.log(result);
                 setNotificationsDenied(result); // Set the result accordingly
             }
         };
 
         subscribe();
     }, [user]);
+
+    const enableNotifications = async () => {
+        const result = await subscribeToPushNotifications(user);
+        setNotificationsDenied(result);
+    }
 
     const login = async () => {
         try {
@@ -171,7 +176,7 @@ function App() {
                     <Route path="/friends" element={user ? <Friends user={user} sendNotification={sendNotification} /> : <Navigate to="/" />} />
                     <Route path="/active" element={user ? <ActiveGames user={user} /> : <Navigate to="/" />} />
                     <Route path="/recent" element={user ? <RecentGames user={user} /> : <Navigate to="/" />} />
-                    <Route path="/" element={user ? <Home notificationsDenied={notificationsDenied} sendNotification={sendNotification} user={user} logout={logout} /> : <Navigate to="/" />} />
+                    <Route path="/" element={user ? <Home enableNotifications={enableNotifications} notificationsDenied={notificationsDenied} sendNotification={sendNotification} user={user} logout={logout} /> : <Navigate to="/" />} />
                     <Route path="*" element={<Navigate to="/" />} />
                 </Routes>) : (
                     <>
