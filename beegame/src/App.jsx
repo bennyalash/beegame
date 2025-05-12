@@ -12,6 +12,7 @@ import { ActiveGames } from './components/ActiveGames';
 import { RecentGames } from './components/RecentGames';
 import { subscribeToPushNotifications } from './functions/index';
 import { sendNotification } from './functions/sendNotification';
+import { Accept } from './components/Accept';
 
 
 import './App.css';
@@ -176,6 +177,7 @@ function App() {
                     <Route path="/friends" element={user ? <Friends user={user} sendNotification={sendNotification} /> : <Navigate to="/" />} />
                     <Route path="/active" element={user ? <ActiveGames user={user} /> : <Navigate to="/" />} />
                     <Route path="/recent" element={user ? <RecentGames user={user} /> : <Navigate to="/" />} />
+                    <Route path="/accept/:gameId" element={user ? <Accept /> : <Navigate to="/" />} />
                     <Route path="/" element={user ? <Home enableNotifications={enableNotifications} notificationsDenied={notificationsDenied} sendNotification={sendNotification} user={user} logout={logout} /> : <Navigate to="/" />} />
                     <Route path="*" element={<Navigate to="/" />} />
                 </Routes>) : (

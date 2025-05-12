@@ -305,16 +305,39 @@ font-size: 42px;
         color:#666;
         box-shadow:none;
     }
-.notificationsDenied {
-    font-family: "Rubik";
-    background: darkred;
-    padding: 10px;
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--white);
-    border-radius: 0;
-    border: 5px solid red;
+.notification-page {
+    position: static;
+    border-radius: 10px;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    padding:40px 0;
 }
+.notification-page-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.notification-page * {
+    text-align: center;
+}
+    .notification-page .alert .title{
+        font-size:32px;
+    }
+.notification-page .alert .challenger {
+    font-size: 18px;
+    justify-content: center;
+}
+    .notificationsDenied {
+        font-family: "Rubik";
+        background: darkred;
+        padding: 10px;
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--white);
+        border-radius: 0;
+        border: 5px solid red;
+    }
 /*.card:hover  {
         box-shadow: 0 0 0 1px #FFDC74 inset, 0 0 0 2px #FFDC74;
     }*/
