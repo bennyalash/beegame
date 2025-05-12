@@ -202,7 +202,7 @@ export function Friends({ logout, user, sendNotification}) {
 
             const gameRef = await addDoc(collection(db, "Games"), gameData);
             navigate(`/game/${gameRef.id}`);
-            sendNotification("xmpzoq9MKoS7kldGuB4JKzeSfDx2", "You've been challenged!", user.username + " has challenged you to a game", `game/${gameRef.id}`)
+            sendNotification(challengedUid, "You've been challenged!", user.username + " has challenged you to a game", `game/${gameRef.id}`)
 
         } catch (error) {
             console.error("Error sending challenge:", error);
