@@ -7,7 +7,7 @@ export const Confirmation = ({ cancel, confirm, good, top, onlineHide }) => {
     }
     return (
         <div className={`confirmation-box${top ? " top" : ""}`}>
-                <div className={`button-holder${!good ? " hidden" : ""}`}>
+                <div className={`dull button-holder${!good ? " hidden" : ""}`}>
                 <button onClick={() => cancel()}>Cancel</button>
             </div>
                 <div className={`button-holder${!good ? " hidden" : ""}`}>

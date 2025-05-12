@@ -3,7 +3,7 @@ import { collection, onSnapshot, doc, updateDoc, deleteDoc, getDoc } from 'fireb
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 
-export function Home({ logout, user }) {
+export function Home({ logout, user, sendNotification, notificationsDenied }) {
     const navigate = useNavigate();
     const [game, setGame] = useState(null);
     const [challenger, setChallenger] = useState(null);
@@ -91,10 +91,15 @@ export function Home({ logout, user }) {
             <p>{user.username}</p>
             </div>
             <div className="auth-buttons homescreen">
+                <div className="warning">
+                    {notificationsDenied && <div className="notificationsDenied">Please turn on Notifications for this App</div>}
+                </div>
                 <button onClick={() => navigate('/active')}>Play</button>
                 <button onClick={() => navigate('/friends')}>Friends</button>
                 <button onClick={() => navigate('/game')}>Pass & Play</button>
-                <div className="button-holder"><button onClick={() => logout()}>Logout</button></div>
+                <div className="button-holder dull">
+                    <button onClick={() => logout()}>Logout</button>
+                </div>
                 {game && state == "waiting" &&
                     <div className="notification">
                         <div className="alert">

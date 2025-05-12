@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import "../online.css";
 
-export function Friends({ logout, user }) {
+export function Friends({ logout, user, sendNotification}) {
     const navigate = useNavigate();
     const [allUsers, setAllUsers] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
@@ -117,6 +117,8 @@ export function Friends({ logout, user }) {
                 ...prev,
                 friendRequestsSent: [...(prev.friendRequestsSent || []), targetid]
             }));
+
+            sendNotification(targetid, "New Friend Request!", user.username + " has sent you a friend request", "friends")
         }
     };
 
@@ -200,6 +202,8 @@ export function Friends({ logout, user }) {
 
             const gameRef = await addDoc(collection(db, "Games"), gameData);
             navigate(`/game/${gameRef.id}`);
+            sendNotification("xmpzoq9MKoS7kldGuB4JKzeSfDx2", "You've been challenged!", user.username + " has challenged you to a game", `game/${gameRef.id}`)
+
         } catch (error) {
             console.error("Error sending challenge:", error);
         }

@@ -138,7 +138,7 @@
     overflow-y:auto;
 }
 #addToHomeScreenMessage {
-    position: fixed;
+    position: absolute;
     bottom: 50%;
     left: 50%;
     transform: translate(-50%, 50%);
@@ -300,17 +300,27 @@ font-size: 42px;
         text-transform: capitalize;
         width: min-content;
     }
-    .button-holder:first-of-type button{
+    .button-holder.dull button{
         background:transparent;
         color:#666;
         box-shadow:none;
     }
-    /*.card:hover  {
+.notificationsDenied {
+    font-family: "Rubik";
+    background: darkred;
+    padding: 10px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--white);
+    border-radius: 0;
+    border: 5px solid red;
+}
+/*.card:hover  {
         box-shadow: 0 0 0 1px #FFDC74 inset, 0 0 0 2px #FFDC74;
     }*/
-    .card{
-        transition: 0.25s ease transform;
-    }
+.card {
+    transition: 0.25s ease transform;
+}
     .card.selected, .card.selected:hover {
        transform:translateY(-10px);
        background:var(--grey2);

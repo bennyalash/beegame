@@ -10,21 +10,32 @@ import { Game } from './components/Game';
 import { OnlineGame } from './components/OnlineGame';
 import { ActiveGames } from './components/ActiveGames';
 import { RecentGames } from './components/RecentGames';
-import { registerPush } from './functions/index';
+import { subscribeToPushNotifications } from './functions/index';
+import { sendNotification } from './functions/sendNotification';
 
 
 import './App.css';
 
 function App() {
 
-    useEffect(() => {
-        registerPush();
-    }, []);
+    
 
     const [user, setUser] = useState(null);
     const [userData, setUserData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [notificationsDenied, setNotificationsDenied] = useState(null);
 
+    useEffect(() => {
+        const subscribe = async () => {
+            if (user) {
+                const result = await subscribeToPushNotifications(user); // Assuming this returns true/false
+
+                setNotificationsDenied(result); // Set the result accordingly
+            }
+        };
+
+        subscribe();
+    }, [user]);
 
     const login = async () => {
         try {
@@ -122,7 +133,7 @@ function App() {
     if (isLoading) {
         return null;
     }
-    if (mode != "s" && false) {
+    if (mode != "s") {
         return (
             <div id="addToHomeScreenMessage">
                 To play Go Bee, add this app to your home screen.<br></br>
@@ -157,10 +168,10 @@ function App() {
                 (<Routes>
                     <Route path="/game" element={user ? <Game key={gameKey} onRematch={rematch} user={user} /> : <Navigate to="/" />} />
                     <Route path="/game/:gameId" element={user ? <OnlineGame key={gameKey} user={user} onRematch={rematch} /> : <Navigate to="/" />} />
-                    <Route path="/friends" element={user ? <Friends user={user} /> : <Navigate to="/" />} />
+                    <Route path="/friends" element={user ? <Friends user={user} sendNotification={sendNotification} /> : <Navigate to="/" />} />
                     <Route path="/active" element={user ? <ActiveGames user={user} /> : <Navigate to="/" />} />
                     <Route path="/recent" element={user ? <RecentGames user={user} /> : <Navigate to="/" />} />
-                    <Route path="/" element={user ? <Home user={user} logout={logout} /> : <Navigate to="/" />} />
+                    <Route path="/" element={user ? <Home notificationsDenied={notificationsDenied} sendNotification={sendNotification} user={user} logout={logout} /> : <Navigate to="/" />} />
                     <Route path="*" element={<Navigate to="/" />} />
                 </Routes>) : (
                     <>

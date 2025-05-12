@@ -1,14 +1,52 @@
-// netlify/functions/save-subscription.js
-let subscriptions = []; // In-memory storage for simplicity
+const admin = require('firebase-admin');
+const serviceAccount = require("./service-account.json");
 
-exports.handler = async function (event) {
-    const sub = JSON.parse(event.body); // Parse the incoming subscription object
-    subscriptions.push(sub); // Store the subscription (replace with DB storage in production)
+if (!admin.apps.length) {
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+    });
+}
 
-    console.log('Saved subscription:', sub);
+const db = admin.firestore();
 
-    return {
-        statusCode: 200,
-        body: JSON.stringify({ success: true })
-    };
+exports.handler = async (event) => {
+    if (event.httpMethod !== 'POST') {
+        return {
+            statusCode: 405,
+            body: 'Method Not Allowed',
+        };
+    }
+
+    try {
+
+        const body = event.body ? JSON.parse(event.body) : null;
+        if (!body) {
+            throw new Error("Missing or invalid request body");
+        }
+
+        const { firebaseUserId, subscription } = JSON.parse(event.body);
+
+        const userRef = db.collection('Users').doc(firebaseUserId);
+        await userRef.set({
+            subscription: subscription,
+        }, { merge: true });
+
+        console.log('Subscription saved successfully to Firestore');
+
+        return {
+            statusCode: 200,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type',
+            },
+            body: JSON.stringify({ message: 'Subscription saved successfully' }),
+        };
+
+    } catch (error) {
+        console.error('Error saving subscription:', error);
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ message: 'Error saving subscription' }),
+        };
+    }
 };
