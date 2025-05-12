@@ -92,9 +92,9 @@ export function Home({ logout, user, sendNotification, notificationsDenied, enab
             </div>
             <div className="auth-buttons homescreen">
                 <div className="warning">
-                    {notificationsDenied == "denied" && <div className="notificationsDenied">Please turn on Notifications for this App</div>}
+                    {notificationsDenied == "denied" && <div className="notificationsDenied">Please turn on Notifications for this App. Current Status: {notificationsDenied}</div>}
                 </div>
-                {notificationsDenied && notificationsDenied != "denied" && notificationsDenied != "granted" && <button onClick={() => enableNotifications()}>Enable Notifications</button>}
+                {notificationsDenied != "" && notificationsDenied != "denied" && notificationsDenied != "granted" && <button onClick={() => enableNotifications()}>Enable Notifications</button>}
                 <br></br>
                 <button onClick={() => navigate('/active')}>Play</button>
                 <button onClick={() => navigate('/friends')}>Friends</button>

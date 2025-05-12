@@ -23,7 +23,7 @@ function App() {
     const [user, setUser] = useState(null);
     const [userData, setUserData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [notificationsDenied, setNotificationsDenied] = useState(null);
+    const [notificationsDenied, setNotificationsDenied] = useState("");
 
     useEffect(() => {
         const subscribe = async () => {
