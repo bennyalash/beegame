@@ -94,7 +94,7 @@ export function Home({ logout, user, sendNotification, notificationsDenied, enab
                 <div className="warning">
                     {notificationsDenied == "denied" && <div className="notificationsDenied">Please turn on Notifications for this App. Current Status: {notificationsDenied}</div>}
                 </div>
-                {notificationsDenied != "" && notificationsDenied != "denied" && notificationsDenied != "granted" && <button onClick={() => enableNotifications()}>Enable Notifications</button>}
+                {/*(notificationsDenied != "" && notificationsDenied != "denied" && notificationsDenied != "granted")*/ true && <button onClick={() => enableNotifications()}>Enable Notifications</button>}
                 <br></br>
                 <button onClick={() => navigate('/active')}>Play</button>
                 <button onClick={() => navigate('/friends')}>Friends</button>
