@@ -33,7 +33,7 @@ export async function subscribeToPushNotifications(user) {
 }
 
 async function sendSubscriptionToBackend(firebaseUserId, subscription) {
-    const response = await fetch('http://localhost:8888/.netlify/functions/save-subscription', {
+    const response = await fetch('/.netlify/functions/save-subscription', {
         method: 'POST',
         body: JSON.stringify({ firebaseUserId, subscription }),
         headers: { 'Content-Type': 'application/json' },

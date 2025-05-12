@@ -25,7 +25,7 @@ function App() {
     const [isLoading, setIsLoading] = useState(true);
     const [notificationsDenied, setNotificationsDenied] = useState("");
 
-    useEffect(() => {
+    /*useEffect(() => {
         const subscribe = async () => {
             if (user) {
                 const result = await subscribeToPushNotifications(user); // Assuming this returns true/false
@@ -35,7 +35,7 @@ function App() {
         };
 
         subscribe();
-    }, [user]);
+    }, [user]);*/
 
     const enableNotifications = async () => {
         const result = await subscribeToPushNotifications(user);
