@@ -24,23 +24,35 @@ function App() {
     const [user, setUser] = useState(null);
     const [userData, setUserData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [notificationsDenied, setNotificationsDenied] = useState("");
+    const [notificationsStatus, setNotificationsStatus] = useState(null);
 
-    /*useEffect(() => {
-        const subscribe = async () => {
-            if (user) {
-                const result = await subscribeToPushNotifications(user); // Assuming this returns true/false
-                console.log(result);
-                setNotificationsDenied(result); // Set the result accordingly
+    useEffect(() => {
+        const checkNotificationStatus = async () => {
+            if (Notification.permission === 'granted') {
+                setNotificationsStatus("granted");
+                return;
+            }
+
+            if (Notification.permission === 'denied') {
+                setNotificationsStatus("denied");
+                return;
+            }
+
+            const registration = await navigator.serviceWorker.getRegistration();
+            if (registration) {
+                const pushSubscription = await registration.pushManager.getSubscription();
+                if (pushSubscription) {
+                    setNotificationsStatus("granted");
+                }
             }
         };
 
-        subscribe();
-    }, [user]);*/
+        checkNotificationStatus();
+    }, []);
 
     const enableNotifications = async () => {
         const result = await subscribeToPushNotifications(user);
-        setNotificationsDenied(result);
+        setNotificationsStatus(result);
     }
 
     const login = async () => {
@@ -178,7 +190,7 @@ function App() {
                     <Route path="/active" element={user ? <ActiveGames user={user} /> : <Navigate to="/" />} />
                     <Route path="/recent" element={user ? <RecentGames user={user} /> : <Navigate to="/" />} />
                     <Route path="/accept/:gameId" element={user ? <Accept /> : <Navigate to="/" />} />
-                    <Route path="/" element={user ? <Home enableNotifications={enableNotifications} notificationsDenied={notificationsDenied} sendNotification={sendNotification} user={user} logout={logout} /> : <Navigate to="/" />} />
+                    <Route path="/" element={user ? <Home enableNotifications={enableNotifications} notificationsStatus={notificationsStatus} sendNotification={sendNotification} user={user} logout={logout} /> : <Navigate to="/" />} />
                     <Route path="*" element={<Navigate to="/" />} />
                 </Routes>) : (
                     <>
@@ -192,3 +204,4 @@ function App() {
 }
 
 export default App;
+
