@@ -22,10 +22,6 @@ export function Accept() {
             // Find the invitation for the current user
             const invitation = games.find(u => u.id === gameId && u.State == "waiting");
 
-            if (!invitation) {
-                navigate('/friends');
-            }
-
             if (invitation) {
                 (async () => {
                     const opp = doc(db, "Users", invitation.Player1);
@@ -41,6 +37,7 @@ export function Accept() {
                 })();
             } else {
                 setGame(null);  // Reset game if no invitation found
+                navigate('/friends');
             }
         });
 
