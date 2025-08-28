@@ -99,9 +99,9 @@ export function Home({ logout, user, sendNotification, notificationsStatus, enab
                 </div>*/}
                 {notificationsStatus != "denied" && notificationsStatus != "granted" && <button onClick={() => enableNotifications()}>Enable Notifications</button>}
                 <br></br>
-                <button onClick={() => navigate('/active')}>Play</button>
-                <button onClick={() => navigate('/friends')}>Friends</button>
-                <button onClick={() => navigate('/game')}>Pass & Play</button>
+                <button onClick={() => navigate('/active')}>Play Online</button>
+                <button onClick={() => navigate('/friends')}>My Friends</button>
+                <button onClick={() => navigate('/aigame')}>AI Challenge</button>
                 <div className="button-holder dull">
                     <button onClick={() => logout()}>Logout</button>
                 </div>

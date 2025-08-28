@@ -19,7 +19,7 @@ const HexTile = ({ q, r, children, piece, onSelectPiece, isSelected, move, onMov
     return (
         <div
             onClick={move ? () => onMove([q, r]) : () => onSelectPiece(piece)}
-            className={`hex-tile${piece?.player == turn && (!online || turn == p) ? " active-player" : ""}${isSelected && piece ? " selected" : ""}${move ? " move" : ""}${start ? " start start-" + player : ""}${highlight ? " highlight" : ""}`}
+            className={`hex-tile${piece?.player == turn && (!online || turn == p) && (online || turn == 1) ? " active-player" : ""}${isSelected && piece ? " selected" : ""}${move ? " move" : ""}${start ? " start start-" + player : ""}${highlight ? " highlight" : ""}`}
             style={{
                 transform: `translate(${x}px, ${y}px)`
             }}

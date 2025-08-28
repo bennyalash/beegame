@@ -145,6 +145,9 @@ body:has(.youtube) {
 }
 
 
+.aigame .game, .aigame .confirmation-box {
+    transform: rotate(180deg);
+}
 
     .game.flips:has(.top .ignore) {
         transform: rotate(180deg);

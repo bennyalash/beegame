@@ -2,6 +2,7 @@
 .board, .card {
     position: relative;
     width: 100%;
+    max-width:400px;
     aspect-ratio: 1 / 1;
     display: flex;
     align-items: center;
@@ -10,8 +11,7 @@
 }
 .board {
     background: transparent;
-    height: 450px;
-    flex: 1;
+    height: 400px;
 }
 .empty{
     font-family:'Rubik';
@@ -368,7 +368,7 @@ font-size: 42px;
     grid-template-columns: 1fr 2fr 2fr 1fr;
     width: calc(100% - 20px);
     max-width: 100%;
-    height: auto;
+    height: 135px;
     padding: 10px;
     grid-column-gap: 10px;
     grid-row-gap: 2px;
@@ -750,7 +750,6 @@ font-size: 42px;
 .popup .winner-bee {
     width: 75px;
     height: 75px;
-    display:none;
     border-radius: 100%;
     margin: 20px 0;
     animation: float 3s ease-in-out infinite;

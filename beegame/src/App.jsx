@@ -7,6 +7,7 @@ import { auth, provider, signInWithPopup, signOut, db } from './firebase';
 import { Home } from './components/Home';
 import { Friends } from './components/Friends';
 import { Game } from './components/Game';
+import { AIGame } from './components/AIGame';
 import { OnlineGame } from './components/OnlineGame';
 import { ActiveGames } from './components/ActiveGames';
 import { RecentGames } from './components/RecentGames';
@@ -185,6 +186,7 @@ function App() {
             {true || mode == "s" ?
                 (<Routes>
                     <Route path="/game" element={user ? <Game key={gameKey} onRematch={rematch} user={user} /> : <Navigate to="/" />} />
+                    <Route path="/aigame" element={user ? <AIGame key={gameKey} /> : <Navigate to="/" />} />
                     <Route path="/game/:gameId" element={user ? <OnlineGame key={gameKey} user={user} onRematch={rematch} /> : <Navigate to="/" />} />
                     <Route path="/friends" element={user ? <Friends user={user} sendNotification={sendNotification} /> : <Navigate to="/" />} />
                     <Route path="/active" element={user ? <ActiveGames user={user} /> : <Navigate to="/" />} />
