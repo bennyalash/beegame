@@ -123,6 +123,13 @@ body:has(.youtube) {
     zoom: 0.4;
     pointer-events:none;
 }
+@media only screen and (max-width: 450px){
+.aigame .board{
+   transform:scale(0.8);
+   height:300px;
+}
+
+}
 .min-game-board .game *{
     pointer-events: none !important;
 }

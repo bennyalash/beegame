@@ -16,7 +16,7 @@ const PlayerHand = ({ cards, selectedCardIndex, onSelectCard, opponent, top, ext
                 key={extraCard?.name}
                 card={extraCard}
                 ignore={true}
-            /> : <div></div>}
+            /> : <></>}
             {cards.map((card, index) => (
                 <Card
                     key={card?.name}
