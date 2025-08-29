@@ -152,7 +152,7 @@ function App() {
     if (isLoading) {
         return null;
     }
-    if (mode != "s" && false) {
+    if (mode != "s") {
         return (
             <div id="addToHomeScreenMessage">
                 To play Go Bee, add this app to your home screen.<br></br>
