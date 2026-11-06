@@ -1,6 +1,7 @@
 {
   "name": "Go Bee",
   "short_name": "Go Bee",
+  "id": "/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -8,12 +9,12 @@
   "theme_color": "#212c31",
   "icons": [
     {
-      "src": "icons/queen_blue_small.png",
+      "src": "icons/icon180.png",
       "sizes": "180x180",
       "type": "image/png"
     },
     {
-      "src": "icons/queen_blue.png",
+      "src": "icons/icon512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
