@@ -444,7 +444,7 @@ export function Game({ online = false, gameData, user, staged = false }) {
                     <h2 id="game-menu-title">Game settings</h2>
                     <button className="game-menu-primary" onClick={() => setMenuOpen(false)}>Resume match</button>
                     {!online && <div className="game-menu-setting">
-                        <span>Rotate hands for active side</span>
+                        <span>Board orientation</span>
                         <button className={`toggle-button ${boardFlips ? "enabled" : ""}`} onClick={() => setBoardFlips(value => !value)} aria-pressed={boardFlips}>{boardFlips ? "ON" : "OFF"}</button>
                     </div>}
                     <button className="game-menu-secondary" onClick={online ? resign : quit}>{online ? "Resign match" : "Leave game"}</button>
