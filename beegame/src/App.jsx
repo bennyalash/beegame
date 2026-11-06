@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, provider, signInWithPopup, signOut, db } from './firebase';
@@ -11,199 +11,119 @@ import { AIGame } from './components/AIGame';
 import { OnlineGame } from './components/OnlineGame';
 import { ActiveGames } from './components/ActiveGames';
 import { RecentGames } from './components/RecentGames';
-import { subscribeToPushNotifications } from './functions/index';
+import { subscribeToPushNotifications, refreshPushNotificationStatus } from './functions/index';
 import { sendNotification } from './functions/sendNotification';
 import { Accept } from './components/Accept';
-
 
 import './App.css';
 
 function App() {
-
-    
-
     const [user, setUser] = useState(null);
-    const [userData, setUserData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [notificationsStatus, setNotificationsStatus] = useState(null);
+    const [notificationsStatus, setNotificationsStatus] = useState('default');
+    const [gameKey, setGameKey] = useState(0);
 
-    useEffect(() => {
-        const checkNotificationStatus = async () => {
-            if (Notification.permission === 'granted') {
-                setNotificationsStatus("granted");
-                return;
-            }
-
-            if (Notification.permission === 'denied') {
-                setNotificationsStatus("denied");
-                return;
-            }
-
-            const registration = await navigator.serviceWorker.getRegistration();
-            if (registration) {
-                const pushSubscription = await registration.pushManager.getSubscription();
-                if (pushSubscription) {
-                    setNotificationsStatus("granted");
-                }
-            }
+    const addUserIfNotExists = useCallback(async (fbuser) => {
+        const userDocRef = doc(db, 'Users', fbuser.uid);
+        const userDoc = await getDoc(userDocRef);
+        const userData = userDoc.exists() ? userDoc.data() : {
+            id: fbuser.uid,
+            name: fbuser.displayName || '',
+            email: fbuser.email || '',
+            photoURL: fbuser.photoURL || '',
+            friends: [],
+            level: 1000,
+            username: fbuser.email?.split('@')[0] || fbuser.displayName || 'bee',
+            createdAt: new Date().toISOString(),
         };
 
-        checkNotificationStatus();
+        if (!userDoc.exists()) {
+            await setDoc(userDocRef, userData);
+        }
+        setUser(userData);
     }, []);
+
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged(async (fbuser) => {
+            try {
+                if (fbuser) {
+                    await addUserIfNotExists(fbuser);
+                } else {
+                    setUser(null);
+                }
+            } catch (error) {
+                console.error('Unable to load your account:', error);
+                setUser(null);
+            } finally {
+                setIsLoading(false);
+            }
+        });
+        return unsubscribe;
+    }, [addUserIfNotExists]);
+
+    useEffect(() => {
+        if (!user) return;
+        let active = true;
+        refreshPushNotificationStatus(user).then((status) => {
+            if (active) setNotificationsStatus(status);
+        });
+        return () => { active = false; };
+    }, [user]);
 
     const enableNotifications = async () => {
         const result = await subscribeToPushNotifications(user);
         setNotificationsStatus(result);
-    }
+        return result;
+    };
 
     const login = async () => {
         try {
-            const result = await signInWithPopup(auth, provider);
-            const fbuser = result.user;
-
-            await addUserIfNotExists(fbuser);
-
+            await signInWithPopup(auth, provider);
         } catch (error) {
             console.error('Login failed:', error);
         }
     };
 
-    const getUser = (u, udoc) => {
-        if (!udoc.exists()) {
-            return {
-                id: u.uid,
-                name: u.displayName || '',
-                email: u.email || '',
-                photoURL: u.photoURL || '',
-                friends: [],
-                level: 1000,
-                username: u.email.split("@")[0],
-                createdAt: new Date().toISOString()
-            };
-        }
-        else {
-            return udoc.data()
-        }
-    }
-
-    const addUserIfNotExists = async (fbuser) => {
-        const userDocRef = doc(db, "Users", fbuser.uid);
-        const userDoc = await getDoc(userDocRef);
-        
-        const userData = getUser(fbuser, userDoc);
-        setUserData(userData);
-        
-
-        setUser(userData);
-
-        if (!userDoc.exists()) {
-            await setDoc(userDocRef, userData);
-            console.log("New user added to the database.");
-        } else {
-            console.log("User already exists in the database.");
-        }
-    };
-
     const logout = async () => {
-        if (window.confirm("Are you sure you want to log out?")) {
+        if (window.confirm('Are you sure you want to log out?')) {
             await signOut(auth);
             setUser(null);
         }
     };
 
-    const [gameKey, setGameKey] = useState(0);
-    const rematch = () => {
-        setGameKey(prev => prev + 1);
-    };
+    if (isLoading) return <main className="app-loading" aria-live="polite">Loading Go Bee…</main>;
 
-    useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged(async (fbuser) => {
-            if (fbuser) {
-                await addUserIfNotExists(fbuser);
-            } else {
-                setUser(null);
-                setUserData(null);
-            }
-            setIsLoading(false);
-        });
-
-        // Cleanup listener on unmount
-        return () => unsubscribe();
-    }, []);
-
-    const [mode, setMode] = useState("browser");
-
-    useEffect(() => {
-        const updateMode = () => {
-            const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
-            setMode(isStandalone ? "s" : "x");
-        };
-
-        updateMode(); // Initial check
-        window.addEventListener("visibilitychange", updateMode); // Detects when app regains focus
-        window.addEventListener("resize", updateMode); // Detects when switching to standalone or browser
-
-        return () => {
-            window.removeEventListener("visibilitychange", updateMode);
-            window.removeEventListener("resize", updateMode);
-        };
-    }, []);
-
-    if (isLoading) {
-        return null;
-    }
-    if (mode != "s") {
-        return (
-            <div id="addToHomeScreenMessage">
-                To play Go Bee, add this app to your home screen.<br></br>
-                <br></br>
-                Tap the share icon in your browser and then "Add to Home Screen" or "Install App"
-            </div>
-        );
-    }
     return (
         <Router>
-            
-            {user ? (
-                null) : (
-                    <div className="page">
-                        <div className="page-header page-global">
-                            <div></div>
-                            <div className="page-logo">
-                                <img width="32" height="32" src="/icons/icon512.png" alt="Go Bee" />
-                                <h1>Go Bee</h1>
-                            </div>
-                            <div></div>
+            {user ? null : (
+                <div className="page">
+                    <div className="page-header page-global">
+                        <div />
+                        <div className="page-logo">
+                            <img width="32" height="32" src="/icons/icon512.png" alt="" />
+                            <h1>Go Bee</h1>
                         </div>
+                        <div />
+                    </div>
                     <div className="auth-buttons homescreen">
                         <button onClick={login}>Google Sign In</button>
-                        </div>
-                        <div>
-                        </div>
                     </div>
+                </div>
             )}
-            
-            {true || mode == "s" ?
-                (<Routes>
-                    <Route path="/game" element={user ? <Game key={gameKey} onRematch={rematch} user={user} /> : <Navigate to="/" />} />
-                    <Route path="/aigame" element={user ? <AIGame key={gameKey} /> : <Navigate to="/" />} />
-                    <Route path="/game/:gameId" element={user ? <OnlineGame key={gameKey} user={user} onRematch={rematch} /> : <Navigate to="/" />} />
-                    <Route path="/friends" element={user ? <Friends user={user} sendNotification={sendNotification} /> : <Navigate to="/" />} />
-                    <Route path="/active" element={user ? <ActiveGames user={user} /> : <Navigate to="/" />} />
-                    <Route path="/recent" element={user ? <RecentGames user={user} /> : <Navigate to="/" />} />
-                    <Route path="/accept/:gameId" element={user ? <Accept /> : <Navigate to="/" />} />
-                    <Route path="/" element={user ? <Home enableNotifications={enableNotifications} notificationsStatus={notificationsStatus} sendNotification={sendNotification} user={user} logout={logout} /> : <Navigate to="/" />} />
-                    <Route path="*" element={<Navigate to="/" />} />
-                </Routes>) : (
-                    <>
-                        {user && <><h1 className="basic-instructions" >To Play Go Bee<br></br>Add to Home Screen<br></br><br></br>Watch Tutorial:</h1>
-                            <iframe className="youtube" height="50%" style={{ border: "none", aspectRatio: "100/177", margin: "0 auto", borderRadius: "10px" }}
-                                src="https://www.youtube.com/embed/DASaHIKKD2Q">
-                            </iframe></>}
-                    </>)}
+
+            <Routes>
+                <Route path="/game" element={user ? <Game key={gameKey} onRematch={() => setGameKey(key => key + 1)} user={user} /> : <Navigate to="/" />} />
+                <Route path="/aigame" element={user ? <AIGame key={gameKey} /> : <Navigate to="/" />} />
+                <Route path="/game/:gameId" element={user ? <OnlineGame key={gameKey} user={user} onRematch={() => setGameKey(key => key + 1)} /> : <Navigate to="/" />} />
+                <Route path="/friends" element={user ? <Friends user={user} sendNotification={sendNotification} /> : <Navigate to="/" />} />
+                <Route path="/active" element={user ? <ActiveGames user={user} /> : <Navigate to="/" />} />
+                <Route path="/recent" element={user ? <RecentGames user={user} /> : <Navigate to="/" />} />
+                <Route path="/accept/:gameId" element={user ? <Accept /> : <Navigate to="/" />} />
+                <Route path="/" element={user ? <Home enableNotifications={enableNotifications} notificationsStatus={notificationsStatus} user={user} logout={logout} /> : null} />
+                <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
         </Router>
     );
 }
 
 export default App;
-

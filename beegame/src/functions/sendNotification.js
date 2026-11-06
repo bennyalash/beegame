@@ -1,13 +1,20 @@
-export async function sendNotification(ToFireBaseUserId, Title, Message, URL) {
+import { auth } from '../firebase';
+
+export async function sendNotification(targetUserId, title, message, targetPath) {
+    const token = await auth.currentUser?.getIdToken();
+    if (!token) throw new Error('Sign in is required to send a notification.');
+
     const response = await fetch('/.netlify/functions/send-notification', {
         method: 'POST',
-        body: JSON.stringify({ ToFireBaseUserId, Title, Message, URL }),
-        headers: { 'Content-Type': 'application/json' }
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ targetUserId, title, message, targetPath }),
     });
-
-    if (response.ok) {
-        console.log(response);
-    } else {
-        console.error('Failed to send notification');
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+        throw new Error(result.error || 'Unable to send notification.');
     }
+    return result;
 }
