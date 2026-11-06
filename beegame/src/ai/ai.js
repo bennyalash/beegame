@@ -1,15 +1,7 @@
-const findPieceAt = (pieces, [x, y]) =>
-    pieces.find(p => p.position.x === x && p.position.y === y) || null;
+import { BOARD_COORDS } from '../game/hexGrid.js';
 
 const isFriendlyAt = (pieces, [x, y], player) =>
     pieces.some(p => p.position.x === x && p.position.y === y && p.player === player);
-
-const coords = [
-    [0, 0],
-    [1, -1], [1, 0], [0, 1], [-1, 1], [-1, 0], [0, -1],
-    [2, -2], [2, -1], [1, 1], [0, 2], [-1, 2],
-    [-2, 2], [-2, 1], [-1, -1], [0, -2], [1, -2], [-2, 0], [2, 0]
-];
 
 const getMovesForPiece = (piece, hand, pieces) => {
     let moves = [];
@@ -25,7 +17,7 @@ const getMovesForPiece = (piece, hand, pieces) => {
 
             const toCoord = [piece.position.x + dx, piece.position.y + dy];
 
-            const tileExists = coords.some(c => c[0] === toCoord[0] && c[1] === toCoord[1]);
+            const tileExists = BOARD_COORDS.some(c => c[0] === toCoord[0] && c[1] === toCoord[1]);
             const occupiedByFriend = isFriendlyAt(pieces, toCoord, piece.player);
 
             if (tileExists && !occupiedByFriend) {
@@ -63,7 +55,7 @@ const WEIGHTS = {
 };
 
 // --- Helpers ---
-const evaluateMoveHeuristic = (pieces, move, currentPlayer) => {
+const evaluateMoveHeuristic = (pieces, move) => {
     const targetPiece = pieces.find(
         p => p.position.x === move.to[0] && p.position.y === move.to[1]
     );
@@ -118,7 +110,7 @@ const applyMove = (pieces, move, playerHand, middleCard) => {
 
 
 
-const evaluateQueenPath = (queen, goal) => {
+const evaluateQueenPath = (queen) => {
 
     const coords = [
         [0, 0, 3, 2, 1],
@@ -139,7 +131,7 @@ const evaluateQueenPath = (queen, goal) => {
 
 
 // --- Evaluation function ---
-const evaluateBoard = (pieces, aiHand, playerHand, middleCard, debug = false) => {
+const evaluateBoard = (pieces, aiHand, playerHand) => {
     let score = 0;
 
     const breakdown = {
@@ -155,7 +147,6 @@ const evaluateBoard = (pieces, aiHand, playerHand, middleCard, debug = false) =>
 
     const aiQueen = getQueen(pieces, 2);
     const playerQueen = getQueen(pieces, 1);
-    const oppWorkers = pieces.filter(p => p.player === 1 && p.type === "pawn");
     const aiWorkers = pieces.filter(p => p.player === 2 && p.type === "pawn");
 
     for (const p of pieces) {
@@ -222,7 +213,7 @@ const minimax = (pieces, aiHand, playerHand, middleCard, depth, isMaximizing, al
         evaluateMoveHeuristic(pieces, b, currentPlayer) - evaluateMoveHeuristic(pieces, a, currentPlayer)
     );
     if (depth === 0 || validMoves.length === 0) {
-        const { score, breakdown } = evaluateBoard(pieces, aiHand, playerHand, middleCard);
+        const { score, breakdown } = evaluateBoard(pieces, aiHand, playerHand);
         return { score: score, move: null, breakdown: breakdown };
     }
 
@@ -262,6 +253,6 @@ const minimax = (pieces, aiHand, playerHand, middleCard, depth, isMaximizing, al
 
 // --- Get AI move ---
 export const getBestAIMove = (pieces, aiHand, middleCard, playerHand, depth = 1) => {
-    const { move, breakdown } = minimax(pieces, aiHand, playerHand, middleCard, depth, true);
+    const { move } = minimax(pieces, aiHand, playerHand, middleCard, depth, true);
     return move || getAllValidMoves(2, aiHand, pieces)[0] || null;
 };

@@ -1,16 +1,22 @@
-import { useState, useEffect } from 'react'
+import { lazy, Suspense, useState, useEffect } from 'react'
 import GameBoard from './GameBoard'
+import { BOARD_COORDS } from '../game/hexGrid.js';
 import '../App.css'
 import PlayerHand from './PlayerHand'
 import { Confirmation } from './Confirmation'
 import { useNavigate, useParams } from 'react-router-dom';
 import { useSwipeable } from 'react-swipeable';
-import { doc, onSnapshot, updateDoc, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
-export function Game({ onRematch, online = false, p1, p2, gameData, user, resignGame = null, staged = false }) {
+const ThreeGameBoard = lazy(() => import('./ThreeGameBoard.jsx').then(module => ({ default: module.ThreeGameBoard })));
 
-    const player = !user || user.username == p1 ? 1 : 2;
+export function Game({ online = false, gameData, user, staged = false }) {
+
+    const viewerId = typeof user === 'string' ? user : user?.id;
+    const player = online
+        ? (viewerId && gameData?.Player1 === viewerId ? 1 : 2)
+        : 1;
     const { gameId: gameId } = useParams();
 
     const [pieces, setPieces] = useState([]);
@@ -92,7 +98,7 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user, resign
             const shuffled = shuffle(cards);
             setCards1(shuffled.slice(0, 2));
             setCards2(shuffled.slice(2, 4));
-            setExtraCard(shuffled[5]);
+            setExtraCard(shuffled[4]);
         }
     }, [gameData, online]);
 
@@ -101,11 +107,9 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user, resign
     const [previewPosition, setPreviewPosition] = useState(null);
     const [isConfirming, setIsConfirming] = useState(false);
     
-    const [count, setCount] = useState(0);
     const [card, setCard] = useState(0);
     const [piece, setPiece] = useState(0);
     
-    const [gameOver, setGameOver] = useState(false);
     const [winner, setWinner] = useState(null);
     const [winType, setWinType] = useState(null);
     const [boardFlips, setBoardFlips] = useState(!online);
@@ -124,12 +128,7 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user, resign
         
     }
 
-    const coords = [
-        [0, 0],
-        [1, -1], [1, 0], [0, 1], [-1, 1], [-1, 0], [0, -1],
-        [2, -2], [2, -1], [1, 1], [0, 2], [-1, 2],
-        [-2, 2], [-2, 1], [-1, -1], [0, -2], [1, -2], [-2, 0], [2, 0]
-    ];
+    const coords = BOARD_COORDS;
 
     const previewMove = (newPosition) => {
 
@@ -421,35 +420,35 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user, resign
 
     return (
         <div style={{ display: "contents" }} className="gameWrapper" {...handlers} >
-            {online && !staged && <div className="page-global page-header">
-                
-                <div>
-                    <div className="footer-button" onClick={() => navigate("/active")}>
-                        <img width="20" src="/icons/exit.png" />
-
-                    </div>
+            {!staged && <header className="game-topbar">
+                <button className="game-icon-button" aria-label={online ? "Return to active games" : "Open pause menu"} onClick={() => online ? navigate("/active") : setMenuOpen(true)}>
+                    <img src="/icons/exit.png" alt="" />
+                </button>
+                <div className="game-brand-mark">
+                    <img src="/icons/hive.png" alt="" />
+                    <span>GO BEE</span>
+                    <small>{online ? "LIVE MATCH" : "HIVE TABLE"}</small>
                 </div>
-                <div>
-                    <div className="turn-indicator">
-                        {turn == player ? "Your Turn" : "Waiting for Opponent"}
-                    </div>
+                <div className="game-turn-pill">
+                    <span className={`game-turn-dot player-${turn}`} />
+                    <span>{online ? (turn === player ? "YOUR TURN" : "OPPONENT'S TURN") : `PLAYER ${turn}'S TURN`}</span>
                 </div>
-                <div>
-                    <div className="footer-button" onClick={() => resign()}>
-                        <img width="20" src="/icons/flag.png" />
-
-                    </div>
-                </div>
-            </div>}
-            {!winner && !online && <div className={`popup menu ${menuOpen ? "open" : "closed"}`}>
-                <h1>Settings</h1>
-                <br></br>
-                <div className="settings-buttons">
-                    <label>Board Flips: </label><button onClick={() => setBoardFlips(!boardFlips)} className={`${boardFlips ? "on" : "off"}`}>{boardFlips ? "On" : "Off"}</button>
-                </div>
-                <div className="auth-buttons">
-                    <button onClick={() => quit()}>Quit Game</button>
-                </div>
+                <button className="game-menu-button" onClick={() => setMenuOpen(true)} aria-label="Open game menu">
+                    <span aria-hidden="true">Ⅱ</span> MENU
+                </button>
+            </header>}
+            {menuOpen && !staged && !winner && <div className="game-menu-overlay" onClick={() => setMenuOpen(false)}>
+                <section className="game-menu-card" role="dialog" aria-modal="true" aria-labelledby="game-menu-title" onClick={event => event.stopPropagation()}>
+                    <p className="game-menu-eyebrow">MATCH PAUSED</p>
+                    <h2 id="game-menu-title">Game settings</h2>
+                    <button className="game-menu-primary" onClick={() => setMenuOpen(false)}>Resume match</button>
+                    {!online && <div className="game-menu-setting">
+                        <span>Rotate for the active side</span>
+                        <button className={`toggle-button ${boardFlips ? "enabled" : ""}`} onClick={() => setBoardFlips(value => !value)} aria-pressed={boardFlips}>{boardFlips ? "ON" : "OFF"}</button>
+                    </div>}
+                    <button className="game-menu-secondary" onClick={online ? resign : quit}>{online ? "Resign match" : "Leave game"}</button>
+                    <button className="game-menu-close" onClick={() => setMenuOpen(false)}>Close</button>
+                </section>
             </div>}
             {winner && <div className="popup">
                 <h1>{winner} Wins!</h1>
@@ -462,10 +461,16 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user, resign
 */}                    <button onClick={() => navigate("/")}>Exit</button>
                 </div>
             </div>}
-            <div className={`game${winner ? " gameOver" : ""}${boardFlips ? " flips" : ""}${online ? " online-game" : ""}${player == 1 ? " p1" : " p2"}${turn == 1 ? " t1" : " t2"}`}>
+            <div className={`game${winner ? " gameOver" : ""}${online ? " online-game" : ""}${player == 1 ? " p1" : " p2"}${turn == 1 ? " t1" : " t2"}${staged ? " staged" : ""}${!online && boardFlips && turn === 1 ? " view-flipped" : ""}`}>
                 {!staged && <PlayerHand extraCard={extraCard} player={player} online={online} turn={turn} top={true} selectedCardIndex={card} cards={cards1} opponent={online ? player == 2 || turn == 2 : turn != 1} onSelectCard={onSelectCard} />}
                 {!staged && <Confirmation cancel={cancel} confirm={confirm} top={true} onlineHide={online && player == 2} good={(turn == 1) && isConfirming && previewPosition && piece} />}
-                <GameBoard online={online} lms={lastMoveStart} lme={lastMoveEnd} turn={turn} onMove={previewMove} card={card} piece={piece} previewPosition={previewPosition} onSelectPiece={onSelectPiece} selectedPiece={piece} coords={coords} pieces={pieces} p={player} />
+                {staged ? (
+                    <GameBoard online={online} lms={lastMoveStart} lme={lastMoveEnd} turn={turn} onMove={previewMove} card={card} piece={piece} previewPosition={previewPosition} onSelectPiece={onSelectPiece} selectedPiece={piece} coords={coords} pieces={pieces} p={player} />
+                ) : (
+                    <Suspense fallback={<div className="board three-board-loading" role="status">Preparing the 3D hive…</div>}>
+                        <ThreeGameBoard online={online} lms={lastMoveStart} lme={lastMoveEnd} turn={turn} onMove={previewMove} card={card} piece={piece} previewPosition={previewPosition} onSelectPiece={onSelectPiece} selectedPiece={piece} coords={coords} pieces={pieces} p={player} humanPlayer={online ? player : null} viewFlipped={online ? player === 2 : boardFlips && turn === 1} />
+                    </Suspense>
+                )}
                 {!staged && <Confirmation cancel={cancel} confirm={confirm} onlineHide={online && player == 1} good={(turn == 2 || (online && player == 2)) && isConfirming && previewPosition && piece} />}
                 {!staged && <PlayerHand extraCard={extraCard} player={player} online={online} turn={turn} top={false} selectedCardIndex={card} cards={cards2} opponent={online ? player == 1 || turn == 1 : turn != 2} onSelectCard={onSelectCard} />}
             </div>

@@ -22,6 +22,7 @@ function App() {
     const [isLoading, setIsLoading] = useState(true);
     const [notificationsStatus, setNotificationsStatus] = useState('default');
     const [gameKey, setGameKey] = useState(0);
+    const [loginError, setLoginError] = useState('');
 
     const addUserIfNotExists = useCallback(async (fbuser) => {
         const userDocRef = doc(db, 'Users', fbuser.uid);
@@ -77,10 +78,14 @@ function App() {
     };
 
     const login = async () => {
+        setLoginError('');
         try {
             await signInWithPopup(auth, provider);
         } catch (error) {
             console.error('Login failed:', error);
+            setLoginError(error?.code === 'auth/popup-blocked'
+                ? 'Your browser blocked the sign-in window. Allow pop-ups for this site and try again.'
+                : 'Sign-in could not be completed. Please try again.');
         }
     };
 
@@ -91,23 +96,50 @@ function App() {
         }
     };
 
-    if (isLoading) return <main className="app-loading" aria-live="polite">Loading Go Bee…</main>;
+    if (isLoading) return <main className="app-loading" aria-live="polite">
+        <img className="loading-hive" src="/icons/hive.png" alt="" />
+        <div className="loading-title">GO BEE</div>
+        <div className="loading-subtitle">Setting up the hive</div>
+        <div className="loading-track" aria-hidden="true"><span /></div>
+    </main>;
 
     return (
         <Router>
             {user ? null : (
-                <div className="page">
-                    <div className="page-header page-global">
-                        <div />
-                        <div className="page-logo">
-                            <img width="32" height="32" src="/icons/icon512.png" alt="" />
-                            <h1>Go Bee</h1>
+                <div className="page login-screen">
+                    <header className="login-topbar">
+                        <div className="login-wordmark"><img src="/icons/hive.png" alt="" /><span>GO BEE</span></div>
+                        <span className="login-topline">A STRATEGY GAME FOR YOUR NEXT MOVE</span>
+                    </header>
+                    <main className="login-stage">
+                        <section className="login-copy">
+                            <span className="login-kicker">WELCOME TO THE HIVE</span>
+                            <h1>Outthink your rival.<br /><em>Own the board.</em></h1>
+                            <p>Every bee has a purpose. Every card changes the map. Protect your queen and close in for the win.</p>
+                            <button className="login-google-button" onClick={login}>
+                                <span className="google-mark" aria-hidden="true">G</span>
+                                <span>Continue with Google</span>
+                                <span className="login-arrow" aria-hidden="true">→</span>
+                            </button>
+                            {loginError && <p className="login-error" role="alert">{loginError}</p>}
+                            <span className="login-secure-note">Secure sign-in · Your progress follows your account</span>
+                        </section>
+                        <div className="login-art" aria-hidden="true">
+                            <div className="login-orbit orbit-one" />
+                            <div className="login-orbit orbit-two" />
+                            <div className="login-hex hex-one" />
+                            <div className="login-hex hex-two" />
+                            <img className="login-queen" src="/icons/bees/queen_yellow.png" alt="" />
+                            <div className="login-board-chip"><span className="login-chip-dot" /> THE HIVE AWAITS</div>
                         </div>
-                        <div />
-                    </div>
-                    <div className="auth-buttons homescreen">
-                        <button onClick={login}>Google Sign In</button>
-                    </div>
+                    </main>
+                    <footer className="login-footer">
+                        <span>Play right in your browser</span>
+                        <span className="login-footer-divider" />
+                        <span>No desktop download required</span>
+                        <span className="login-footer-divider" />
+                        <span>Add to your home screen whenever you like</span>
+                    </footer>
                 </div>
             )}
 
