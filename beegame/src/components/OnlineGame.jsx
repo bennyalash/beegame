@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { doc, onSnapshot, updateDoc, deleteDoc } from 'firebase/firestore';
+import { doc, onSnapshot, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useParams, useNavigate } from 'react-router-dom';
 
@@ -54,19 +54,7 @@ export function OnlineGame({user }) {
             handleBeforeUnload(); // Still uses up-to-date ref
             unsubscribe();
         };
-    }, [gameId, user.id]);
-
-
-
-
-    const startGame = async () => {
-        if (gameData?.State === "accepted") {
-            const gameRef = doc(db, "Games", gameId);
-            await updateDoc(gameRef, { State: "started" });
-        }
-    };
-
-
+    }, [gameId, user.id, navigate]);
 
     return (
         <div className="game-room">

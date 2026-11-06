@@ -1,26 +1,15 @@
 import React from 'react';
 import HexTile from './HexTile';
 import Piece from './Piece';
-import Card from './Card';
+import { getLegalMoveDestinations } from '../game/hexGrid.js';
 
 
 
-const GameBoard = ({ p, online, lms, lme, previewPosition, card, piece, onSelectPiece, selectedPiece, coords, pieces, onMove, turn, extraCard }) => {
+const GameBoard = ({ p, online, lms, lme, previewPosition, card, piece, onSelectPiece, selectedPiece, coords, pieces, onMove, turn }) => {
 
-    let absoluteMoves = [];
-    if (card && piece && piece.position && !previewPosition) {
-        
-        const q = piece.position.x;
-        const r = piece.position.y;
-
-        const turnMultiplier = turn === 1 ? -1 : 1;
-
-        absoluteMoves = card.moves.map(move => {
-            const dq = move.x;
-            const dr = move.y;
-            return [q + dq * turnMultiplier, r + dr * turnMultiplier];
-        });
-    }
+    const absoluteMoves = previewPosition
+        ? []
+        : getLegalMoveDestinations({ coords, card, piece, pieces, turn });
 
     let updatedPieces = pieces;
 

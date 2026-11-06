@@ -1,16 +1,16 @@
-import { useState, useEffect } from 'react'
-import GameBoard from './GameBoard'
+import { lazy, Suspense, useState, useEffect, useRef } from 'react'
+import { BOARD_COORDS } from '../game/hexGrid.js';
 import '../App.css'
 import PlayerHand from './PlayerHand'
 import { Confirmation } from './Confirmation'
-import { useNavigate, useParams } from 'react-router-dom';
-import { useSwipeable } from 'react-swipeable';
+import { useNavigate } from 'react-router-dom';
 import { getBestAIMove } from '../ai/ai';
+
+const ThreeGameBoard = lazy(() => import('./ThreeGameBoard.jsx').then(module => ({ default: module.ThreeGameBoard })));
 
 export function AIGame() {
 
     const [pieces, setPieces] = useState([]);
-    const [player, setPlayer] = useState(1);
     const [cards1, setCards1] = useState([]);
     const [cards2, setCards2] = useState([]);
     const [turn, setTurn] = useState(1);
@@ -56,7 +56,7 @@ export function AIGame() {
             const shuffled = shuffle(cards);
             setCards1(shuffled.slice(0, 2));
             setCards2(shuffled.slice(2, 4));
-            setExtraCard(shuffled[5]);
+            setExtraCard(shuffled[4]);
     }, []);
 
 
@@ -67,28 +67,11 @@ export function AIGame() {
     const [card, setCard] = useState(0);
     const [piece, setPiece] = useState(0);
 
-    const [gameOver, setGameOver] = useState(false);
     const [winner, setWinner] = useState(null);
     const [winType, setWinType] = useState(null);
     const navigate = useNavigate();
 
-    const changeTurn = () => {
-        if (turn == 2) {
-            setTurn(1);
-            return 1;
-        }
-        else if (turn == 1) {
-            setTurn(2);
-            return 2;
-        }
-    }
-
-    const coords = [
-        [0, 0],
-        [1, -1], [1, 0], [0, 1], [-1, 1], [-1, 0], [0, -1],
-        [2, -2], [2, -1], [1, 1], [0, 2], [-1, 2],
-        [-2, 2], [-2, 1], [-1, -1], [0, -2], [1, -2], [-2, 0], [2, 0]
-    ];
+    const coords = BOARD_COORDS;
 
     const previewMove = (newPosition) => {
 
@@ -105,33 +88,23 @@ export function AIGame() {
         setLMS([thispiece.position.x, thispiece.position.y]);
         setLME(newPosition);
 
-        let winnerUpdate = null;
-        let winTypeUpdate = null;
-
         if (thispiece.type === "queen" && turn === 1 && newPosition[0] === 0 && newPosition[1] === 2) {
             setWinner("Red");
             setWinType("Infest");
-            winnerUpdate = "Red";
-            winTypeUpdate = "Infest";
         }
         if (thispiece.type === "queen" && turn === 2 && newPosition[0] === 0 && newPosition[1] === -2) {
             setWinner("Blue");
             setWinType("Infest");
-            winnerUpdate = "Blue";
-            winTypeUpdate = "Infest";
         }
 
         let updatedPieces;
         if (occupyingPiece) {
             if (occupyingPiece.type === 'queen') {
                 setWinType("Sting");
-                winTypeUpdate = "Sting";
                 if (turn === 1) {
                     setWinner("Red");
-                    winnerUpdate = "Red";
                 } else {
                     setWinner("Blue");
-                    winnerUpdate = "Blue";
                 }
             }
 
@@ -182,6 +155,9 @@ export function AIGame() {
         setPiece(null);
         setTurn(turn == 1 ? 2 : 1);
     };
+
+    const finalizeMoveRef = useRef(finalizeMove);
+    finalizeMoveRef.current = finalizeMove;
 
 
 
@@ -249,19 +225,22 @@ export function AIGame() {
 
     // When AI move is chosen, step through it
     useEffect(() => {
-        if (!aiMove) return;
+        if (!aiMove || menuOpen) return undefined;
+        let cancelled = false;
 
         const runSteps = async () => {
             const delay = (ms) => new Promise(res => setTimeout(res, ms));
 
             setPiece(aiMove.piece);
             await delay(500);
+            if (cancelled) return;
             setCard(aiMove.card);
             
             previewMove(aiMove.to);
             await delay(500);
+            if (cancelled) return;
 
-            finalizeMove(aiMove.to, aiMove.piece, aiMove.card);
+            finalizeMoveRef.current(aiMove.to, aiMove.piece, aiMove.card);
             setPreviewPosition(null);
             setIsConfirming(false);
             setAiMove(null); // clear so it doesn't rerun
@@ -270,7 +249,8 @@ export function AIGame() {
         };
 
         runSteps();
-    }, [aiMove]);
+        return () => { cancelled = true; };
+    }, [aiMove, menuOpen]);
 
     console.log(turn);
 
@@ -284,26 +264,32 @@ export function AIGame() {
                     <button onClick={() => quit()}>Quit Game</button>
                 </div>
             </div>*/}
-            <div className="page-global page-header">
-
-                <div>
-                    <div className="footer-button" onClick={() => quit()}>
-                        <img width="20" src="/icons/exit.png" />
-
-                    </div>
+            <header className="game-topbar">
+                <button className="game-icon-button" aria-label="Leave AI match" onClick={() => quit()}>
+                    <img src="/icons/exit.png" alt="" />
+                </button>
+                <div className="game-brand-mark">
+                    <img src="/icons/hive.png" alt="" />
+                    <span>GO BEE</span>
+                    <small>AI CHALLENGE</small>
                 </div>
-                <div>
-                    <div className="turn-indicator">
-                        {turn == 1 ? "Your Turn" : "Waiting for Opponent"}
-                    </div>
+                <div className="game-turn-pill">
+                    <span className={`game-turn-dot player-${turn}`} />
+                    <span>{turn === 1 ? "YOUR TURN" : "AI THINKING"}</span>
                 </div>
-                <div>
-                    <div className="footer-button" onClick={() => quit()}>
-                        <img width="20" src="/icons/flag.png" />
-
-                    </div>
-                </div>
-            </div>
+                <button className="game-menu-button" onClick={() => setMenuOpen(true)} aria-label="Open game menu">
+                    <span aria-hidden="true">Ⅱ</span> MENU
+                </button>
+            </header>
+            {menuOpen && !winner && <div className="game-menu-overlay" onClick={() => setMenuOpen(false)}>
+                <section className="game-menu-card" role="dialog" aria-modal="true" aria-labelledby="ai-game-menu-title" onClick={event => event.stopPropagation()}>
+                    <p className="game-menu-eyebrow">MATCH PAUSED</p>
+                    <h2 id="ai-game-menu-title">Ready, strategist?</h2>
+                    <p className="game-menu-copy">Choose one of your cards, select one of your bees, then move to a glowing hex. Protect your queen and trap the rival queen to win.</p>
+                    <button className="game-menu-primary" onClick={() => setMenuOpen(false)}>Resume match</button>
+                    <button className="game-menu-secondary" onClick={() => quit()}>Leave game</button>
+                </section>
+            </div>}
             {winner && <div className="popup">
                 <h1>{winner} Wins!</h1>
                 {winType && <p>By {winType}</p>}
@@ -312,10 +298,12 @@ export function AIGame() {
                     <button onClick={() => navigate("/")}>Exit</button>
                 </div>
             </div>}
-            <div className={`game${winner ? " gameOver" : ""}${turn == 1 ? " t1" : " t2"}`}>
+            <div className={`game ai-game-board${winner ? " gameOver" : ""}${turn == 1 ? " t1" : " t2"}`}>
                 <PlayerHand extraCard={extraCard} turn={turn} top={true} selectedCardIndex={card} cards={cards1} opponent={turn != 1} onSelectCard={onSelectCard} />
                 <Confirmation cancel={cancel} confirm={confirm} good={isConfirming && previewPosition && piece && !winner && turn == 1} />
-                <GameBoard lms={lastMoveStart} lme={lastMoveEnd} turn={turn} onMove={previewMove} card={card} piece={piece} previewPosition={previewPosition} onSelectPiece={onSelectPiece} selectedPiece={piece} coords={coords} pieces={pieces} />
+                <Suspense fallback={<div className="board three-board-loading" role="status">Preparing the 3D hive…</div>}>
+                    <ThreeGameBoard p={1} humanPlayer={1} viewFlipped lms={lastMoveStart} lme={lastMoveEnd} turn={turn} onMove={previewMove} card={card} piece={piece} previewPosition={previewPosition} onSelectPiece={onSelectPiece} selectedPiece={piece} coords={coords} pieces={pieces} />
+                </Suspense>
                 <PlayerHand extraCard={extraCard} turn={turn} top={false} selectedCardIndex={card} cards={cards2} opponent={true} onSelectCard={onSelectCard} />
             </div>
 

@@ -15,25 +15,33 @@ export function Home({ logout, user, notificationsStatus, enableNotifications })
     const [settingsMessage, setSettingsMessage] = useState('');
 
     useEffect(() => {
-        const unsubscribe = onSnapshot(collection(db, 'Games'), (snapshot) => {
+        let current = true;
+        const unsubscribe = onSnapshot(collection(db, 'Games'), async (snapshot) => {
             const invitation = snapshot.docs
                 .map(gameDoc => ({ id: gameDoc.id, ...gameDoc.data() }))
                 .find(item => item.Player2 === user.id && item.State === 'waiting');
             if (!invitation) {
-                setGame(null);
+                if (current) {
+                    setGame(null);
+                    setChallenger(null);
+                    setChallengerLevel(null);
+                    setState(null);
+                }
                 return;
             }
-            (async () => {
+            try {
                 const p1Snap = await getDoc(doc(db, 'Users', invitation.Player1));
-                if (p1Snap.exists()) {
+                if (current && p1Snap.exists()) {
                     setGame(invitation.id);
-                    setChallenger(invitation.P1Name);
+                    setChallenger(invitation.P1Name || 'A fellow beekeeper');
                     setChallengerLevel(p1Snap.data().level);
                     setState(invitation.State);
                 }
-            })();
+            } catch (error) {
+                console.error('Unable to load the challenger profile:', error);
+            }
         }, (error) => console.error('Unable to load game invitations:', error));
-        return unsubscribe;
+        return () => { current = false; unsubscribe(); };
     }, [user.id]);
 
     useEffect(() => {
@@ -105,57 +113,95 @@ export function Home({ logout, user, notificationsStatus, enableNotifications })
     const cancelGame = async (gameId) => {
         try {
             await deleteDoc(doc(db, 'Games', gameId));
+            setGame(null);
         } catch (error) {
             console.error('Error canceling game:', error);
         }
     };
 
     return (
-        <div className="page">
-            <div className="page-header page-global">
-                <div className="page-logo"><h1>Go Bee</h1></div>
-                <div className="trophies"><img width="20" height="20" src="/icons/trophy.png" alt="" />{user.level}</div>
-                <p>{user.username}</p>
-            </div>
-            <div className="home-content">
-                <section className="notification-settings" aria-labelledby="notification-heading">
-                    <h2 id="notification-heading">Notifications</h2>
-                    <label className="email-notification-toggle">
-                        <input type="checkbox" checked={pushEnabled} onChange={togglePush} disabled={notificationsStatus === 'denied' || notificationsStatus === 'unsupported' || notificationsStatus === 'insecure'} />
-                        <span>Push notifications (browser permission is set per device)</span>
-                    </label>
-                    {notificationsStatus === 'denied' && <p className="notification-status">Push is blocked in browser settings. Update this site’s permission there to turn it on.</p>}
-                    {notificationsStatus === 'unsupported' && <p className="notification-status">This browser does not support push notifications. Email notifications can still be enabled.</p>}
-                    {notificationsStatus === 'insecure' && <p className="notification-status">Push notifications require a secure HTTPS connection.</p>}
-                    {notificationsStatus === 'error' && <p className="notification-status" role="status">Push setup failed. Check your connection and try again.</p>}
-                    <label className="email-notification-toggle">
-                        <input type="checkbox" checked={emailEnabled} onChange={toggleEmail} disabled={savingEmail || !user.email} />
-                        <span>Email me about friend requests and game challenges</span>
-                    </label>
-                    {!user.email && <p className="notification-status">No email address is on this account.</p>}
-                    {settingsMessage && <p className="notification-status" role="status">{settingsMessage}</p>}
+        <div className="page home-lobby">
+            <header className="lobby-topbar">
+                <div className="lobby-wordmark">
+                    <img src="/icons/hive.png" alt="" />
+                    <span>GO BEE</span>
+                </div>
+                <div className="lobby-profile">
+                    <span className="lobby-player-name">{user.username}</span>
+                    <span className="lobby-rating"><img src="/icons/trophy.png" alt="" />{user.level}</span>
+                </div>
+                <button className="lobby-logout" onClick={logout}>Sign out</button>
+            </header>
+
+            <main className="home-content lobby-content">
+                <section className="lobby-hero" aria-labelledby="lobby-title">
+                    <div className="lobby-hero-copy">
+                        <span className="lobby-kicker">THE HIVE IS YOURS TO COMMAND</span>
+                        <h1 id="lobby-title">Think in hexes.<br /><em>Move like a bee.</em></h1>
+                        <p>Outmaneuver your rival, protect your queen, and claim the sweetest victory.</p>
+                    </div>
+                    <div className="lobby-hero-art" aria-hidden="true">
+                        <div className="hero-halo" />
+                        <img src="/icons/bees/queen_yellow.png" alt="" />
+                    </div>
                 </section>
 
+                <nav className="lobby-menu" aria-label="Game modes">
+                    <button className="lobby-mode online-mode" onClick={() => navigate('/active')}>
+                        <span className="mode-index">01</span>
+                        <span className="mode-icon"><img src="/icons/bees/queen_blue.png" alt="" /></span>
+                        <span className="mode-copy"><strong>Play online</strong><small>Find a rival or return to a match</small></span>
+                        <span className="mode-arrow" aria-hidden="true">→</span>
+                    </button>
+                    <button className="lobby-mode ai-mode" onClick={() => navigate('/aigame')}>
+                        <span className="mode-index">02</span>
+                        <span className="mode-icon"><img src="/icons/bees/bee_red.png" alt="" /></span>
+                        <span className="mode-copy"><strong>AI challenge</strong><small>Sharpen your strategy against the hive</small></span>
+                        <span className="mode-arrow" aria-hidden="true">→</span>
+                    </button>
+                    <button className="lobby-mode friends-mode" onClick={() => navigate('/friends')}>
+                        <span className="mode-index">03</span>
+                        <span className="mode-icon"><img src="/icons/person.png" alt="" /></span>
+                        <span className="mode-copy"><strong>My friends</strong><small>Challenge your own crew</small></span>
+                        <span className="mode-arrow" aria-hidden="true">→</span>
+                    </button>
+                </nav>
+
                 {game && state === 'waiting' && (
-                    <div className="notification">
-                        <div className="alert">
-                            <div className="title">New Challenge!</div>
-                            <div className="challenger">{challenger} <div className="trophies"><img width="16" height="16" src="/icons/trophy.png" alt="" />{challengerLevel}</div></div>
+                    <section className="lobby-invitation" aria-label="New game challenge">
+                        <div className="invitation-copy">
+                            <span className="lobby-kicker">NEW CHALLENGE</span>
+                            <strong>{challenger} is calling you out</strong>
+                            <span className="invitation-rating"><img src="/icons/trophy.png" alt="" /> {challengerLevel} rating</span>
                         </div>
-                        <div className="response">
-                            <button className="dull" onClick={() => cancelGame(game)} aria-label="Decline challenge">X</button>
-                            <button onClick={() => startGame(game)}>Accept</button>
+                        <div className="invitation-actions">
+                            <button className="decline-invite" onClick={() => cancelGame(game)} aria-label="Decline challenge">×</button>
+                            <button className="accept-invite" onClick={() => startGame(game)}>Accept match</button>
                         </div>
-                    </div>
+                    </section>
                 )}
 
-                <div className="auth-buttons homescreen">
-                    <button onClick={() => navigate('/active')}>Play Online</button>
-                    <button onClick={() => navigate('/friends')}>My Friends</button>
-                    <button onClick={() => navigate('/aigame')}>AI Challenge</button>
-                    <div className="button-holder dull"><button onClick={logout}>Logout</button></div>
-                </div>
-            </div>
+                <details className="lobby-settings">
+                    <summary><span>Player settings</span><small>Push and email alerts</small></summary>
+                    <section className="notification-settings" aria-labelledby="notification-heading">
+                        <h2 id="notification-heading">Notifications</h2>
+                        <label className="email-notification-toggle">
+                            <input type="checkbox" checked={pushEnabled} onChange={togglePush} disabled={notificationsStatus === 'denied' || notificationsStatus === 'unsupported' || notificationsStatus === 'insecure'} />
+                            <span>Push notifications (browser permission is set per device)</span>
+                        </label>
+                        {notificationsStatus === 'denied' && <p className="notification-status">Push is blocked in browser settings. Update this site’s permission there to turn it on.</p>}
+                        {notificationsStatus === 'unsupported' && <p className="notification-status">This browser does not support push notifications. Email notifications can still be enabled.</p>}
+                        {notificationsStatus === 'insecure' && <p className="notification-status">Push notifications require a secure HTTPS connection.</p>}
+                        {notificationsStatus === 'error' && <p className="notification-status" role="status">Push setup failed. Check your connection and try again.</p>}
+                        <label className="email-notification-toggle">
+                            <input type="checkbox" checked={emailEnabled} onChange={toggleEmail} disabled={savingEmail || !user.email} />
+                            <span>Email me about friend requests and game challenges</span>
+                        </label>
+                        {!user.email && <p className="notification-status">No email address is on this account.</p>}
+                        {settingsMessage && <p className="notification-status" role="status">{settingsMessage}</p>}
+                    </section>
+                </details>
+            </main>
         </div>
     );
 }
