@@ -8,6 +8,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useSwipeable } from 'react-swipeable';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import MatchResult from './MatchResult';
 
 const ThreeGameBoard = lazy(() => import('./ThreeGameBoard.jsx').then(module => ({ default: module.ThreeGameBoard })));
 
@@ -443,24 +444,20 @@ export function Game({ online = false, gameData, user, staged = false }) {
                     <h2 id="game-menu-title">Game settings</h2>
                     <button className="game-menu-primary" onClick={() => setMenuOpen(false)}>Resume match</button>
                     {!online && <div className="game-menu-setting">
-                        <span>Rotate for the active side</span>
+                        <span>Rotate hands for active side</span>
                         <button className={`toggle-button ${boardFlips ? "enabled" : ""}`} onClick={() => setBoardFlips(value => !value)} aria-pressed={boardFlips}>{boardFlips ? "ON" : "OFF"}</button>
                     </div>}
                     <button className="game-menu-secondary" onClick={online ? resign : quit}>{online ? "Resign match" : "Leave game"}</button>
                     <button className="game-menu-close" onClick={() => setMenuOpen(false)}>Close</button>
                 </section>
             </div>}
-            {winner && <div className="popup">
-                <h1>{winner} Wins!</h1>
-                {winType && <p>By {winType}</p>}
-                {winner && winnerChange && ((winner == "Red" && player == 1) || (winner == "Blue" && player == 2)) && <h2>+ {winnerChange} <img width="24" height="24" src="../icons/trophy.png" /></h2>}
-                {winner && loserChange && ((winner == "Red" && player == 2) || (winner == "Blue" && player == 1)) && <h2>- {-1*loserChange} <img width="24" height="24" src="../icons/trophy.png" /></h2>}
-                <img className="winner-bee" src={`/icons/bees/queen_${winner?.toLowerCase() || "red"}.png`} />
-                <div className="auth-buttons">
-{/*                    {!online && <button onClick={() => onRematch()} >Rematch</button>}
-*/}                    <button onClick={() => navigate("/")}>Exit</button>
-                </div>
-            </div>}
+            {winner && <MatchResult
+                winner={winner}
+                winType={winType}
+                didWin={online ? ((player === 1 && winner === 'Red') || (player === 2 && winner === 'Blue')) : null}
+                ratingDelta={online ? ((player === 1 && winner === 'Red') || (player === 2 && winner === 'Blue') ? winnerChange : loserChange) : null}
+                onExit={() => navigate('/')}
+            />}
             <div className={`game${winner ? " gameOver" : ""}${online ? " online-game" : ""}${player == 1 ? " p1" : " p2"}${turn == 1 ? " t1" : " t2"}${staged ? " staged" : ""}${!online && boardFlips && turn === 1 ? " view-flipped" : ""}`}>
                 {!staged && <PlayerHand extraCard={extraCard} player={player} online={online} turn={turn} top={true} selectedCardIndex={card} cards={cards1} opponent={online ? player == 2 || turn == 2 : turn != 1} onSelectCard={onSelectCard} />}
                 {!staged && <Confirmation cancel={cancel} confirm={confirm} top={true} onlineHide={online && player == 2} good={(turn == 1) && isConfirming && previewPosition && piece} />}
@@ -468,7 +465,7 @@ export function Game({ online = false, gameData, user, staged = false }) {
                     <GameBoard online={online} lms={lastMoveStart} lme={lastMoveEnd} turn={turn} onMove={previewMove} card={card} piece={piece} previewPosition={previewPosition} onSelectPiece={onSelectPiece} selectedPiece={piece} coords={coords} pieces={pieces} p={player} />
                 ) : (
                     <Suspense fallback={<div className="board three-board-loading" role="status">Preparing the 3D hive…</div>}>
-                        <ThreeGameBoard online={online} lms={lastMoveStart} lme={lastMoveEnd} turn={turn} onMove={previewMove} card={card} piece={piece} previewPosition={previewPosition} onSelectPiece={onSelectPiece} selectedPiece={piece} coords={coords} pieces={pieces} p={player} humanPlayer={online ? player : null} viewFlipped={online ? player === 2 : boardFlips && turn === 1} />
+                        <ThreeGameBoard online={online} lms={lastMoveStart} lme={lastMoveEnd} turn={turn} onMove={previewMove} card={card} piece={piece} previewPosition={previewPosition} onSelectPiece={onSelectPiece} selectedPiece={piece} coords={coords} pieces={pieces} p={player} humanPlayer={online ? player : null} viewFlipped={online ? player === 2 : boardFlips} />
                     </Suspense>
                 )}
                 {!staged && <Confirmation cancel={cancel} confirm={confirm} onlineHide={online && player == 1} good={(turn == 2 || (online && player == 2)) && isConfirming && previewPosition && piece} />}

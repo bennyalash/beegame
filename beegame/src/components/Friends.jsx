@@ -3,6 +3,7 @@ import { collection, getDocs, doc, updateDoc, arrayUnion, arrayRemove, addDoc, o
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import "../online.css";
+import AppHeader from './AppHeader';
 
 export function Friends({ user, sendNotification }) {
     const navigate = useNavigate();
@@ -234,7 +235,7 @@ export function Friends({ user, sendNotification }) {
     }
 
     return (
-        <div className="page">
+        <div className="page friends-page">
             {game && state == "waiting" &&
                 <div className="notification">
                     <div className="alert">
@@ -247,14 +248,8 @@ export function Friends({ user, sendNotification }) {
                     </div>
                 </div>
             }
-            <div className="page-header page-global">
-                <div className="page-logo">
-                    <h1 onClick={() => navigate('/')}>{"<"} Back</h1>
-                </div>
-                <div className="trophies"><img width="20" height="20" src="icons/trophy.png" />{user.level}</div>
-                <p>{user.username}</p>
-            </div>
-            <div className="page-content">
+            <AppHeader user={user} pageTitle="Friends" onHome={() => navigate('/')} />
+            <div className="page-content friends-content">
                  <div className="page-section">
                     <input id="userSearch" type="text" placeholder="Search by username" value={userSearch} onInput={(e) => setUserSearch(e.target.value)} />
                     {filteredUsers.length > 0 &&<div className="friends search">

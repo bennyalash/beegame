@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { collection, onSnapshot, doc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
+import AppHeader from './AppHeader';
 export function RecentGames({ user }) {
     const navigate = useNavigate();
     const [game, setGame] = useState(null);
@@ -87,15 +88,9 @@ export function RecentGames({ user }) {
 
 
     return (
-        <div className="page">
-            <div className="page-header page-global">
-                <div className="page-logo">
-                    <h1 onClick={() => navigate('/')}>{"<"} Back</h1>
-                </div>
-                <div className="trophies"><img width="20" height="20" src="icons/trophy.png" />{userLevel}</div>
-                <p>{user.username}</p>
-            </div>
-            <div className="page-content">
+        <div className="page games-page recent-games-page">
+            <AppHeader user={user} level={userLevel} pageTitle="Recent games" onHome={() => navigate('/')} />
+            <div className="page-content games-content recent-games-content">
                 {game && state == "waiting" &&
                     <div className="notification">
                         <div className="alert">
@@ -108,13 +103,15 @@ export function RecentGames({ user }) {
                         </div>
                     </div>
                 }
-                <br></br>
+                <section className="page-section game-list-section">
                 <h2>Recent Games</h2>
                 <div className="game-list">
                     {recentGames && recentGames?.length > 0 ?
                         (<>{recentGames.map(g => {
 
-                            const win = (g.Player1 == user.id && g.Winner == "Red");
+                            const win = (g.Player1 === user.id && g.Winner === "Red")
+                                || (g.Player2 === user.id && g.Winner === "Blue");
+                            const ratingChange = Number(win ? g.WinnerChange : g.LoserChange) || 0;
 
                             return (
                                 <div key={g.id} className="recent-game-list-item">
@@ -130,7 +127,7 @@ export function RecentGames({ user }) {
                                         </div>
                                         
                                         <div className="trophies">
-                                            <div>{win ? "+ " : "- "}{g.WinnerChange }</div> <img src="icons/trophy.png" width="20" />
+                                            <div>{ratingChange > 0 ? "+" : ""}{ratingChange}</div> <img src="/icons/trophy.png" width="20" alt="" />
                                         </div>
                                     </div>
                                 </div>
@@ -138,6 +135,7 @@ export function RecentGames({ user }) {
                         })}</>) : (<><div className="empty">You haven't finished any games yet.<br></br><br></br><button onClick={() => navigate(`/active`)}>View Games</button></div></>)
                     }
                 </div>
+                </section>
             </div>
             <div className="">
 

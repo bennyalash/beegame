@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { collection, onSnapshot, doc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
+import AppHeader from './AppHeader';
 
 export function Home({ logout, user, notificationsStatus, enableNotifications }) {
     const navigate = useNavigate();
@@ -121,17 +122,7 @@ export function Home({ logout, user, notificationsStatus, enableNotifications })
 
     return (
         <div className="page home-lobby">
-            <header className="lobby-topbar">
-                <div className="lobby-wordmark">
-                    <img src="/icons/hive.png" alt="" />
-                    <span>GO BEE</span>
-                </div>
-                <div className="lobby-profile">
-                    <span className="lobby-player-name">{user.username}</span>
-                    <span className="lobby-rating"><img src="/icons/trophy.png" alt="" />{user.level}</span>
-                </div>
-                <button className="lobby-logout" onClick={logout}>Sign out</button>
-            </header>
+            <AppHeader user={user} onLogout={logout} />
 
             <main className="home-content lobby-content">
                 <section className="lobby-hero" aria-labelledby="lobby-title">

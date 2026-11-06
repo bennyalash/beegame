@@ -97,23 +97,23 @@ function updateTileLook(tile, props, hoveredKey) {
     const hover = hoveredKey === key;
 
     if (selected) {
-        setMaterialColor(faceMaterial, '#e1a72c', '#ffc74f', 0.5);
-        borderMaterial.color.set('#ffdd84');
+        setMaterialColor(faceMaterial, '#d3a444', '#e6c873', 0.28);
+        borderMaterial.color.set('#f1d47b');
     } else if (isTarget && occupant && occupant.player !== props.turn) {
-        setMaterialColor(faceMaterial, '#a6553e', '#ff774f', hover ? 0.72 : 0.34);
-        borderMaterial.color.set('#ff9b66');
+        setMaterialColor(faceMaterial, '#9b5a45', '#d47a54', hover ? 0.4 : 0.16);
+        borderMaterial.color.set('#d99b73');
     } else if (isTarget) {
-        setMaterialColor(faceMaterial, '#318b73', '#44e0ae', hover ? 0.68 : 0.32);
-        borderMaterial.color.set('#74ffd6');
+        setMaterialColor(faceMaterial, '#76925e', '#a8bd78', hover ? 0.34 : 0.14);
+        borderMaterial.color.set('#c9d29a');
     } else if (hover) {
-        setMaterialColor(faceMaterial, '#547b77', '#83d9c7', 0.32);
-        borderMaterial.color.set('#a2f2df');
+        setMaterialColor(faceMaterial, '#71866b', '#a5b78a', 0.14);
+        borderMaterial.color.set('#c7cfaa');
     } else if (lastMove) {
-        setMaterialColor(faceMaterial, '#806534', '#eab64e', 0.25);
-        borderMaterial.color.set('#d7ae60');
+        setMaterialColor(faceMaterial, '#897349', '#c1a56a', 0.12);
+        borderMaterial.color.set('#c6ac74');
     } else {
-        setMaterialColor(faceMaterial, '#355260');
-        borderMaterial.color.set('#63808a');
+        setMaterialColor(faceMaterial, '#50674b');
+        borderMaterial.color.set('#98875a');
     }
 }
 
@@ -194,8 +194,8 @@ export function ThreeGameBoard({
         let animationFrame;
         try {
             const scene = new THREE.Scene();
-            scene.background = new THREE.Color('#111c21');
-            scene.fog = new THREE.Fog('#111c21', 13, 28);
+            scene.background = new THREE.Color('#20362e');
+            scene.fog = new THREE.Fog('#20362e', 13, 28);
 
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
             renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -214,8 +214,8 @@ export function ThreeGameBoard({
             camera.position.set(8, 10, 9);
             camera.lookAt(0, 0, 0);
 
-            scene.add(new THREE.HemisphereLight('#fff3d9', '#233b48', 2.0));
-            const keyLight = new THREE.DirectionalLight('#fff1d3', 4.2);
+            scene.add(new THREE.HemisphereLight('#f7efd8', '#26392c', 1.8));
+            const keyLight = new THREE.DirectionalLight('#fff2d8', 3.4);
             keyLight.position.set(-5, 10, 7);
             keyLight.castShadow = true;
             keyLight.shadow.mapSize.set(1024, 1024);
@@ -226,13 +226,13 @@ export function ThreeGameBoard({
             keyLight.shadow.bias = -0.0003;
             keyLight.shadow.radius = 5;
             scene.add(keyLight);
-            const rimLight = new THREE.DirectionalLight('#70cad4', 1.5);
+            const rimLight = new THREE.DirectionalLight('#d8bf7f', 0.7);
             rimLight.position.set(6, 5, -7);
             scene.add(rimLight);
 
             const table = new THREE.Mesh(
                 new THREE.PlaneGeometry(50, 50),
-                makeMaterial('#162329', { roughness: 0.9, metalness: 0.05 }),
+                makeMaterial('#20362e', { roughness: 0.96, metalness: 0 }),
             );
             table.rotation.x = -Math.PI / 2;
             table.position.y = -0.17;
@@ -241,7 +241,7 @@ export function ThreeGameBoard({
 
             const platform = new THREE.Mesh(
                 new THREE.CylinderGeometry(4.38, 4.52, 0.22, 48),
-                makeMaterial('#21343b', { roughness: 0.56, metalness: 0.18 }),
+                makeMaterial('#304639', { roughness: 0.78, metalness: 0.02 }),
             );
             platform.position.y = -0.06;
             platform.receiveShadow = true;
@@ -252,7 +252,7 @@ export function ThreeGameBoard({
             scene.add(boardGroup);
             const tileMap = new Map();
             const tileFaces = [];
-            const baseMaterial = makeMaterial('#263b43', { roughness: 0.58, metalness: 0.16 });
+            const baseMaterial = makeMaterial('#344b3d', { roughness: 0.72, metalness: 0.03 });
             for (const [q, r] of boardCoords) {
                 const tileGroup = new THREE.Group();
                 const world = axialToWorld(q, r, HEX_RADIUS);
@@ -263,14 +263,14 @@ export function ThreeGameBoard({
                 rim.position.y = 0.105;
                 tileGroup.add(rim);
 
-                const faceMaterial = makeMaterial('#355260', { roughness: 0.42, metalness: 0.08 });
+                const faceMaterial = makeMaterial('#50674b', { roughness: 0.66, metalness: 0.02 });
                 const face = new THREE.Mesh(new THREE.CylinderGeometry(HEX_RADIUS * 0.89, HEX_RADIUS * 0.95, 0.16, 6), faceMaterial);
                 face.position.y = 0.29;
                 face.userData.coordinate = [q, r];
                 tileGroup.add(face);
                 tileFaces.push(face);
 
-                const borderMaterial = new THREE.LineBasicMaterial({ color: '#63808a', transparent: true, opacity: 0.92 });
+                const borderMaterial = new THREE.LineBasicMaterial({ color: '#98875a', transparent: true, opacity: 0.78 });
                 const vertices = [];
                 const outlineRadius = HEX_RADIUS * 0.88;
                 for (let index = 0; index <= 6; index += 1) {
@@ -362,7 +362,7 @@ export function ThreeGameBoard({
             const frame = (time) => {
                 const delta = Math.min(clock.getDelta(), 0.05);
                 const props = propsRef.current;
-                const angle = (props.viewFlipped ? Math.PI : 0) + 0.48 + (props.turn === 2 ? 0.12 : 0);
+                const angle = (props.viewFlipped ? Math.PI : 0) + 0.48;
                 const cameraRadius = 10.6;
                 const desiredPosition = new THREE.Vector3(Math.sin(angle) * cameraRadius, 10.1, Math.cos(angle) * cameraRadius);
                 camera.position.lerp(desiredPosition, 1 - Math.exp(-delta * 2.2));

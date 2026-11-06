@@ -5,6 +5,7 @@ import PlayerHand from './PlayerHand'
 import { Confirmation } from './Confirmation'
 import { useNavigate } from 'react-router-dom';
 import { getBestAIMove } from '../ai/ai';
+import MatchResult from './MatchResult';
 
 const ThreeGameBoard = lazy(() => import('./ThreeGameBoard.jsx').then(module => ({ default: module.ThreeGameBoard })));
 
@@ -290,14 +291,12 @@ export function AIGame() {
                     <button className="game-menu-secondary" onClick={() => quit()}>Leave game</button>
                 </section>
             </div>}
-            {winner && <div className="popup">
-                <h1>{winner} Wins!</h1>
-                {winType && <p>By {winType}</p>}
-                <img className="winner-bee" src={`/icons/bees/queen_${winner?.toLowerCase() || "red"}.png`} />
-                <div className="auth-buttons">
-                    <button onClick={() => navigate("/")}>Exit</button>
-                </div>
-            </div>}
+            {winner && <MatchResult
+                winner={winner}
+                winType={winType}
+                didWin={winner === 'Red'}
+                onExit={() => navigate('/')}
+            />}
             <div className={`game ai-game-board${winner ? " gameOver" : ""}${turn == 1 ? " t1" : " t2"}`}>
                 <PlayerHand extraCard={extraCard} turn={turn} top={true} selectedCardIndex={card} cards={cards1} opponent={turn != 1} onSelectCard={onSelectCard} />
                 <Confirmation cancel={cancel} confirm={confirm} good={isConfirming && previewPosition && piece && !winner && turn == 1} />
