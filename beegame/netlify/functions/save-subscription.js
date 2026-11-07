@@ -1,23 +1,53 @@
-const { getAdmin, getAuthenticatedUser, jsonResponse } = require('./admin');
+const admin = require('firebase-admin');
+require('dotenv').config();
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+
+if (!admin.apps.length) {
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+    });
+}
+
+const db = admin.firestore();
 
 exports.handler = async (event) => {
-    if (event.httpMethod !== 'POST') return jsonResponse(405, { error: 'Method not allowed.' });
+    if (event.httpMethod !== 'POST') {
+        return {
+            statusCode: 405,
+            body: 'Method Not Allowed',
+        };
+    }
 
     try {
-        const caller = await getAuthenticatedUser(event);
-        const body = JSON.parse(event.body || '{}');
-        const subscription = body.subscription;
-        if (!subscription?.endpoint || !subscription?.keys?.p256dh || !subscription?.keys?.auth) {
-            return jsonResponse(400, { error: 'A valid push subscription is required.' });
+
+        const body = event.body ? JSON.parse(event.body) : null;
+        if (!body) {
+            throw new Error("Missing or invalid request body");
         }
-        const db = getAdmin().firestore();
-        await db.collection('Users').doc(caller.uid).set({
-            subscription,
-            subscriptions: getAdmin().firestore.FieldValue.arrayUnion(subscription),
+
+        const { firebaseUserId, subscription } = JSON.parse(event.body);
+
+        const userRef = db.collection('Users').doc(firebaseUserId);
+        await userRef.set({
+            subscription: subscription,
         }, { merge: true });
-        return jsonResponse(200, { success: true });
+
+        console.log('Subscription saved successfully to Firestore');
+
+        return {
+            statusCode: 200,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': 'Content-Type',
+            },
+            body: JSON.stringify({ message: 'Subscription saved successfully' }),
+        };
+
     } catch (error) {
-        console.error('Error saving push subscription:', error);
-        return jsonResponse(error.statusCode || 500, { error: error.statusCode ? error.message : 'Unable to save push subscription.' });
+        console.error('Error saving subscription:', error);
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ message: 'Error saving subscription' }),
+        };
     }
 };

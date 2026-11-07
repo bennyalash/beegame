@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import "../online.css";
 
-export function Friends({ user, sendNotification }) {
+export function Friends({ logout, user, sendNotification}) {
     const navigate = useNavigate();
     const [allUsers, setAllUsers] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
@@ -118,8 +118,7 @@ export function Friends({ user, sendNotification }) {
                 friendRequestsSent: [...(prev.friendRequestsSent || []), targetid]
             }));
 
-            await sendNotification(targetid, "New Friend Request!", user.username + " has sent you a friend request", "friends")
-                .catch(error => console.error('Friend request notification failed:', error));
+            sendNotification(targetid, "New Friend Request!", user.username + " has sent you a friend request", "friends")
         }
     };
 
@@ -203,8 +202,7 @@ export function Friends({ user, sendNotification }) {
 
             const gameRef = await addDoc(collection(db, "Games"), gameData);
             navigate(`/game/${gameRef.id}`);
-            await sendNotification(challengedUid, "You've been challenged!", user.username + " has challenged you to a game", `accept/${gameRef.id}`)
-                .catch(error => console.error('Game challenge notification failed:', error));
+            sendNotification(challengedUid, "You've been challenged!", user.username + " has challenged you to a game", `accept/${gameRef.id}`)
             console.log(`active/${gameRef.id}`);
         } catch (error) {
             console.error("Error sending challenge:", error);
@@ -282,7 +280,7 @@ export function Friends({ user, sendNotification }) {
                     </div>}
                 </div>
                 <div className="page-section">
-                    <h2>Friends{userData?.friends?.length > 0 && <span className="friend-count">{userData.friends.length}</span>}</h2>
+                    <h2>Friends{userData?.friends.length > 0 && <span className="friend-count">{userData?.friends.length || 0}</span>}</h2>
                     {userData?.friends?.length > 0 ?
                         (<div className="friends">
                             {(userData?.friends || []).map(friendid => {
@@ -320,7 +318,7 @@ export function Friends({ user, sendNotification }) {
                                     <div key={requester.id} className="friend">
                                         <div className="friendname">
                                             <div className="username">{requester.username}</div>
-                                            <div className="fullname">{requester.name || requester.email}</div>
+                                            <div className="fullname">{requester.name || friend.email}</div>
                                             <div className="trophies"><img width="16" height="16" src="icons/trophy.png" />{requester.level}</div>
                                         </div>
                                         <div className="challenge">

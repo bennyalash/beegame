@@ -1,36 +1,12 @@
-# Go Bee
+# React + Vite
 
-Go Bee is a React + Vite strategy game that runs in a regular desktop or mobile browser and can also be installed as a Progressive Web App (PWA). Installation is optional; the same routes and game features are available in the browser.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Development
+Currently, two official plugins are available:
 
-```sh
-npm ci
-npm run dev
-```
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-Build and lint the frontend with:
+## Expanding the ESLint configuration
 
-```sh
-npm run build
-npm run lint
-```
-
-The frontend uses Firebase Authentication and Firestore. Online invitations are sent through Netlify Functions in `netlify/functions/`.
-
-## Notification delivery configuration
-
-Push and email notifications are delivered by the `send-notification` Netlify Function. For deployments, configure these environment variables in Netlify (never commit their values):
-
-- `FIREBASE_SERVICE_ACCOUNT`: Firebase Admin service-account JSON for the Go Bee Firebase project.
-- `VAPID_PUBLIC_KEY` and `VAPID_PRIVATE_KEY`: matching Web Push VAPID keys. The public key must match `VAPID_PUBLIC_KEY` in `src/config.js`.
-- `VAPID_SUBJECT`: a contact URI such as `mailto:admin@example.com` (optional; defaults to the current project contact).
-- `RESEND_API_KEY`: Resend API key for email delivery.
-- `NOTIFICATION_FROM_EMAIL`: a sender address verified with Resend, for example `Go Bee <notifications@example.com>`.
-- `APP_URL`: the deployed HTTPS origin used for email links, such as `https://example.netlify.app`.
-
-Firebase Authentication must allow the deployed app's domain. The user must opt in to email notifications from the in-app Notifications settings; push permission is managed per browser/device. Push notifications require HTTPS (except local development). If the Resend credentials or a verified sender are absent, email delivery is intentionally reported as not configured rather than silently claiming success.
-
-## PWA
-
-The manifest, icons, and service worker live under `public/`. Users may install the app on supported devices, but desktop browser users are not prompted or required to install it.
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.

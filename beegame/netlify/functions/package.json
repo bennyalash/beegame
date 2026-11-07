@@ -1,16 +1,16 @@
 {
-  "name": "go-bee-functions",
+  "name": "functions",
   "version": "1.0.0",
-  "private": true,
-  "main": "send-notification.js",
-  "engines": {
-    "node": ">=18"
-  },
+  "main": "save-subscription.js",
   "scripts": {
-    "dev": "netlify dev --functions ."
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "netlify dev --functions ./netlify/functions"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
   "dependencies": {
-    "firebase-admin": "^13.3.0",
-    "web-push": "^3.6.7"
+    "firebase-admin": "^13.3.0"
   }
 }
