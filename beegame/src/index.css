@@ -460,7 +460,7 @@ font-size: 42px;
     width: 77px;
     height: 75px;
     background: var(--yellow2);
-    clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
+    clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -521,7 +521,7 @@ font-size: 42px;
             width: 100%;
             height: 100%;
             background: #b78000;
-            clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
+            clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
             z-index: 1;
             transform: scale(0.25, 0.2) translateY(50px);
         }
@@ -541,8 +541,7 @@ font-size: 42px;
 }
 
 .hex-tile.start.start-2 {
-    /*clip-path: polygon(25% 5%, 100% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);*/
-    clip-path: polygon(50% 5%, 50% 5%, 100% 61.5%, 75% 95%, 25% 95%, 0% 61.5%);
+    clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
     height: 100px;
     margin-top: -22px;
     padding-top:0px;
@@ -551,8 +550,7 @@ font-size: 42px;
     transform:translateY(10px);
 }
 .hex-tile.start.start-1 {
-    /*clip-path: polygon(25% 5%, 100% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);*/
-    clip-path: polygon(25% 5%, 75% 5%, 100% 38.5%, 50% 95%, 50% 95%, 0% 38.5%);
+    clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
     height: 100px;
     margin-bottom: -22px;
     padding-top: 0px;
@@ -880,4 +878,95 @@ font-size: 42px;
         max-width: 920px;
         margin-inline: auto;
     }
+}
+
+
+/* Shared warm-paper surfaces for social and game-list routes */
+.page-content {
+    box-sizing: border-box; width: 100%; max-width: none; min-height: 0; margin: 0;
+    padding: clamp(14px, 2.5vw, 32px) clamp(14px, 3vw, 42px) max(20px, env(safe-area-inset-bottom, 0px));
+    overflow: auto; color: var(--app-ink);
+}
+.page-content h2 { margin: 0 0 14px; color: var(--app-forest); font: 600 18px 'Rubik', sans-serif; letter-spacing: 0; }
+.page-content h2 span { margin-left: 8px; padding: 2px 8px; border: 1px solid var(--app-line); border-radius: 999px; background: var(--app-paper-alt); color: var(--app-muted); font-size: 11px; }
+.page-section {
+    min-width: 0; box-sizing: border-box; margin: 0; padding: clamp(16px, 2vw, 24px);
+    border: 1px solid var(--app-line); border-radius: 12px; background: var(--app-paper); box-shadow: none;
+    color: var(--app-ink); text-align: left;
+}
+.page-global { box-sizing: border-box; width: 100%; max-width: none; min-height: 58px; padding: 6px 18px; border-bottom: 1px solid var(--app-line); background: var(--app-paper); color: var(--app-ink); }
+.page-global h1, .page-global p { color: var(--app-ink); }
+.page-global h1 { font: 600 14px 'Rubik', sans-serif; }
+.page-global p { font: 500 12px 'Rubik', sans-serif; }
+.friends-page, .games-page { display: flex; flex-direction: column; min-height: 0; }
+.friends-content { display: grid; grid-template-columns: 1fr; align-content: start; gap: 14px; }
+.friends-content .notification, .games-content .notification { position: static; grid-column: 1 / -1; width: auto; padding: 12px 14px; border: 1px solid #d7bd81; border-radius: 10px; background: #f5edd8; color: var(--app-ink); }
+.friends-content .notification .alert, .games-content .notification .alert { color: var(--app-ink); }
+.friends-content .notification .alert .challenger { color: var(--app-muted); }
+.friends-content .notification .response button { box-shadow: none; }
+.friends-content #userSearch {
+    box-sizing: border-box; width: 100%; margin: 0 0 12px; padding: 11px 12px; border: 1px solid var(--app-line); border-radius: 8px;
+    background: #fbf8ef; color: var(--app-ink); font: 500 13px 'Rubik', sans-serif; outline: none;
+}
+.friends-content #userSearch:focus { border-color: var(--app-honey); box-shadow: 0 0 0 2px #bd8a3428; }
+.friends-content #userSearch::placeholder { color: #849087; opacity: 1; }
+.friends-content .friends { overflow: visible; border-radius: 0; background: transparent; }
+.friends-content .friends.search { margin: 0; padding: 0; background: transparent; }
+.friends-content .friend { grid-template-columns: minmax(0, 1fr) auto; gap: 10px; padding: 12px 2px; border-bottom: 1px solid #e6e0d2; }
+.friends-content .friend:last-child { border-bottom: 0; }
+.friends-content .friendname { min-width: 0; color: var(--app-ink); font: 500 13px 'Rubik', sans-serif; }
+.friends-content .friendname .username { color: var(--app-ink); font-weight: 700; overflow-wrap: anywhere; }
+.friends-content .friendname .fullname { color: var(--app-muted); font-size: 11px; overflow-wrap: anywhere; }
+.friends-content .friendname .trophies { justify-content: flex-start; margin-top: 4px; color: #805f26; font-size: 10px; }
+.friends-content .friendname .trophies img { width: 13px; height: 13px; }
+.friends-content .challenge button, .games-content .resume button, .games-content .empty button {
+    min-width: 74px; min-height: 36px; padding: 7px 12px; border: 0; border-radius: 7px;
+    background: var(--app-forest); box-shadow: none; color: #fffdf6; font: 600 11px 'Rubik', sans-serif; text-transform: none;
+}
+.friends-content .challenge button:hover, .games-content .resume button:hover, .games-content .empty button:hover { background: #355d4e; }
+.friends-content .challenge button img { width: 23px; height: 23px; object-fit: contain; }
+.friends-content .search .friend button.disabledButton { border: 1px solid var(--app-line); background: var(--app-paper-alt); color: var(--app-muted); }
+.friends-content .empty, .games-content .empty { padding: 14px 0; color: var(--app-muted); font: 400 13px/1.55 'Rubik', sans-serif; text-align: left; }
+.games-content { display: grid; grid-template-columns: 1fr; align-content: start; gap: 16px; }
+.game-list-section { min-width: 0; }
+.game-list { display: flex; flex-direction: column; gap: 10px; margin: 0; }
+.game-list-item {
+    box-sizing: border-box; display: grid; grid-template-columns: minmax(130px, 0.8fr) minmax(0, 1.2fr); align-items: center; gap: 16px;
+    margin: 0; padding: 12px; border: 1px solid #e2dccd; border-radius: 10px; background: #fbf8ef; color: var(--app-ink); font-family: 'Rubik', sans-serif;
+}
+.min-game-board { width: 100%; max-width: 250px; aspect-ratio: 1; border: 1px solid var(--app-line); border-radius: 8px; background: #e2e1d2; box-shadow: none; }
+.min-game-board .game { max-width: none; margin: 0; background: transparent; }
+.game-list-item .opponent { min-width: 0; padding: 4px; color: var(--app-ink); }
+.game-list-item .opponent .username { margin-bottom: 7px; color: var(--app-ink); font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
+.game-list-item .opponent .turn { color: var(--app-muted); font-size: 11px; }
+.game-list-item .resume { margin-top: 14px; }
+.recent-game-list-item { margin: 0; padding: 12px; border: 1px solid #e2dccd; border-radius: 10px; background: #fbf8ef; color: var(--app-ink); }
+.recent-game-list-item .opponent { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; align-items: center; gap: 10px; width: 100%; }
+.recent-game-list-item .opponent .info, .recent-game-list-item .reason { color: var(--app-ink); font: 500 12px 'Rubik', sans-serif; }
+.recent-game-list-item .reason { grid-column: 2; color: var(--app-muted); font-size: 10px; }
+.recent-game-list-item .trophies { grid-column: 3; grid-row: 1 / span 2; color: #805f26; font-size: 12px; font-weight: 700; }
+.recent-game-list-item .trophies img { width: 16px; height: 16px; }
+.result .winorlose { width: 26px; border-radius: 7px; background: #e5ddd0; color: var(--app-ink); }
+.result .win { background: #dce7d9; color: #315a43; }
+.result .lose { background: #efe0d8; color: #8b5140; }
+
+@media (min-width: 760px) {
+    .friends-content { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .friends-content > .page-section:first-of-type { grid-column: 1 / -1; }
+    .games-content { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .games-content > .notification { grid-column: 1 / -1; }
+}
+@media (min-width: 1180px) {
+    .friends-content { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .friends-content > .page-section:first-of-type { grid-column: auto; }
+}
+@media (max-width: 600px) {
+    .page-content { padding: 12px 12px max(16px, env(safe-area-inset-bottom, 0px)); }
+    .app-topbar-title { max-width: 75px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .friends-content, .games-content { gap: 10px; }
+    .page-section { padding: 14px; border-radius: 10px; }
+    .game-list-item { grid-template-columns: minmax(92px, 0.75fr) minmax(0, 1.25fr); gap: 10px; padding: 9px; }
+    .game-list-item .opponent .username { font-size: 12px; }
+    .game-list-item .resume { margin-top: 9px; }
+    .recent-game-list-item { padding: 10px; }
 }

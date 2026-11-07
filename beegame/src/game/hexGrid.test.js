@@ -1,15 +1,39 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { axialToWorld, BOARD_COORDS, getLegalMoveDestinations } from './hexGrid.js';
+import * as THREE from 'three';
+import { axialToWorld, BOARD_COORDS, getLegalMoveDestinations, POINTY_TOP_ROTATION } from './hexGrid.js';
 
-test('axial coordinates map to flat-top hex spacing in the X/Z plane', () => {
+test('axial coordinates map to pointy-top hex spacing in the X/Z plane', () => {
     const radius = 2;
     assert.deepEqual(axialToWorld(0, 0, radius), { x: 0, z: 0 });
     assert.deepEqual(axialToWorld(1, 0, radius), {
-        x: 3,
-        z: Math.sqrt(3),
+        x: 2 * Math.sqrt(3),
+        z: 0,
     });
-    assert.deepEqual(axialToWorld(0, 1, radius), { x: 0, z: 2 * Math.sqrt(3) });
+    assert.deepEqual(axialToWorld(0, 1, radius), {
+        x: Math.sqrt(3),
+        z: 3,
+    });
+});
+
+test('hex mesh rotation puts a vertex at the pointy top of the board', () => {
+    const geometry = new THREE.CylinderGeometry(1, 1, 1, 6);
+    const rotation = new THREE.Matrix4().makeRotationY(POINTY_TOP_ROTATION);
+    const vertices = geometry.getAttribute('position');
+    let hasNorthVertex = false;
+
+    for (let index = 0; index < vertices.count; index += 1) {
+        const vertex = new THREE.Vector3().fromBufferAttribute(vertices, index);
+        if (Math.abs(vertex.y - 0.5) > 1e-6) continue;
+        vertex.applyMatrix4(rotation);
+        if (Math.abs(vertex.x) < 1e-6 && Math.abs(vertex.z - 1) < 1e-6) {
+            hasNorthVertex = true;
+            break;
+        }
+    }
+
+    geometry.dispose();
+    assert.equal(hasNorthVertex, true);
 });
 
 test('card vectors rotate 180 degrees for player one and remain unchanged for player two', () => {

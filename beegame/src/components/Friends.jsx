@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { collection, getDocs, doc, updateDoc, arrayUnion, arrayRemove, addDoc, onSnapshot, deleteDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
-import "../online.css";
+import { ThreeAppCanvas } from './ThreeAppCanvas';
 
 export function Friends({ user, sendNotification }) {
     const navigate = useNavigate();
@@ -62,10 +62,10 @@ export function Friends({ user, sendNotification }) {
             const search = userSearch.toLowerCase();
 
             const filtered = allUsers
-                .filter(user => user.username?.toLowerCase().includes(search))
+                .filter(user => (user.username || user.name || '').toLowerCase().includes(search))
                 .sort((a, b) => {
-                    const aName = a.username.toLowerCase();
-                    const bName = b.username.toLowerCase();
+                    const aName = (a.username || a.name || '').toLowerCase();
+                    const bName = (b.username || b.name || '').toLowerCase();
 
                     // Prioritize exact match > startsWith > includes
                     if (aName === search) return -1;
@@ -233,113 +233,41 @@ export function Friends({ user, sendNotification }) {
         }
     }
 
-    return (
-        <div className="page">
-            {game && state == "waiting" &&
-                <div className="notification">
-                    <div className="alert">
-                        <div className="title">{`New Challenge!`}</div>
-                        <div className="challenger">{`${challenger}`} <div className="trophies"><img width="16" height="16" src="icons/trophy.png" />800</div></div>
-                    </div>
-                    <div className="response">
-                        <button className="dull" onClick={() => cancelGame(game)}>X</button>
-                        <button onClick={() => startGame(game)}>Accept</button>
-                    </div>
-                </div>
-            }
-            <div className="page-header page-global">
-                <div className="page-logo">
-                    <h1 onClick={() => navigate('/')}>{"<"} Back</h1>
-                </div>
-                <div className="trophies"><img width="20" height="20" src="icons/trophy.png" />{user.level}</div>
-                <p>{user.username}</p>
-            </div>
-            <div className="page-content">
-                 <div className="page-section">
-                    <input id="userSearch" type="text" placeholder="Search by username" value={userSearch} onInput={(e) => setUserSearch(e.target.value)} />
-                    {filteredUsers.length > 0 &&<div className="friends search">
-                        {filteredUsers.map(u => {
-                            if (
-                                (userData?.friends || []).includes(u.id) ||
-                                (userData?.friendRequestsReceived || []).includes(u.id)
-                            ) {
-                                return null;
-                            }
-                            return (
-                                <div key={u.id} className="friend">
-                                    <div className="friendname">
-                                        <div className="username">{u.username}</div>
-                                        <div className="fullname">{u.name || u.email}</div>
-                                        <div className="trophies"><img width="16" height="16" src="icons/trophy.png" />{u.level}</div>
-                                    </div>
-                                    <div className="challenge">
-                                        {!(userData?.friendRequestsSent || []).includes(u.id) && <button onClick={() => sendFriendRequest(u.id)}>Add</button>}
-                                        {(userData?.friendRequestsSent || []).includes(u.id) && <button className="disabledButton">Sent</button>}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>}
-                </div>
-                <div className="page-section">
-                    <h2>Friends{userData?.friends?.length > 0 && <span className="friend-count">{userData.friends.length}</span>}</h2>
-                    {userData?.friends?.length > 0 ?
-                        (<div className="friends">
-                            {(userData?.friends || []).map(friendid => {
-                                const friend = allUsers.find(u => u.id === friendid);
-                                if (!friend) return null;
-                                return (
-                                    <div key={friend.id} className="friend">
-                                        <div className="friendname">
-                                            <div className="username">{friend.username}</div>
-                                            <div className="fullname">{friend.name || friend.email}</div>
-                                            <div className="trophies"><img width="16" height="16" src="icons/trophy.png" />{friend.level}</div>
-                                        </div>
-                                        <div className="challenge">
-                                            <button onClick={() => sendChallenge(friend.id, friend.username)}><img width="30" height="30" src="icons/hive.png" /></button>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>) : (<div className="friends empty">Add some friends.</div>)}
-                </div>
-            
-            <div className="page-section">
-                <h2>Friend Requests</h2>
-                    {userData?.friendRequestsReceived?.length > 0 ?
-                        (<div className="friends requests">
-                            {(userData?.friendRequestsReceived || []).map(requestid => {
-                                const requester = allUsers.find(u => u.id === requestid);
-                                if (!requester) return null;
-                                if (
-                                    (userData?.friends || []).includes(requester.id)
-                                ) {
-                                    return null;
-                                }
-                                return (
-                                    <div key={requester.id} className="friend">
-                                        <div className="friendname">
-                                            <div className="username">{requester.username}</div>
-                                            <div className="fullname">{requester.name || requester.email}</div>
-                                            <div className="trophies"><img width="16" height="16" src="icons/trophy.png" />{requester.level}</div>
-                                        </div>
-                                        <div className="challenge">
-                                            <button onClick={() => acceptFriendRequest(requester.id)}>Accept</button>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                            ): (<div className="friends request empty">No friend requests at this time.</div>)}
-                
-            </div>
+    const friends = (userData?.friends || [])
+        .map((friendId) => allUsers.find((candidate) => candidate.id === friendId))
+        .filter(Boolean);
+    const requests = (userData?.friendRequestsReceived || [])
+        .map((requestId) => allUsers.find((candidate) => candidate.id === requestId))
+        .filter((requester) => requester && !(userData?.friends || []).includes(requester.id));
+    const receivedIds = userData?.friendRequestsReceived || [];
+    const filtered = filteredUsers
+        .filter((candidate) => !(userData?.friends || []).includes(candidate.id) && !receivedIds.includes(candidate.id))
+        .map((candidate) => ({
+            ...candidate,
+            requestSent: (userData?.friendRequestsSent || []).includes(candidate.id),
+        }));
 
-    
-
-            </div>
-            <div className="">
-
-            </div>
-        </div>
-    );
+    return <ThreeAppCanvas
+        view="friends"
+        user={user}
+        searchValue={userSearch}
+        onSearchChange={setUserSearch}
+        data={{
+            friendUsers: friends,
+            requestUsers: requests,
+            filteredUsers: filtered,
+            invitation: game && state === 'waiting' ? { id: game, name: challenger } : null,
+        }}
+        actions={{
+            home: () => navigate('/'),
+            active: () => navigate('/active'),
+            friends: () => navigate('/friends'),
+            recent: () => navigate('/recent'),
+            sendFriendRequest: (payload) => sendFriendRequest(payload?.id),
+            acceptFriendRequest,
+            sendChallenge: (payload) => sendChallenge(payload?.id, payload?.name),
+            acceptInvite: () => game && startGame(game),
+            declineInvite: () => game && cancelGame(game),
+        }}
+    />;
 }

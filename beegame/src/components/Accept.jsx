@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { collection, onSnapshot, doc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import { useNavigate, useParams } from 'react-router-dom';
 import { db } from '../firebase';
+import { ThreeAppCanvas } from './ThreeAppCanvas';
 
-export function Accept() {
+export function Accept({ user }) {
     const navigate = useNavigate();
     const [game, setGame] = useState(null);
     const [challenger, setChallenger] = useState(null);
@@ -65,25 +66,19 @@ export function Accept() {
     }
 
 
-    return (
-        <div className="page">
-            <div className="page-content notification-page-content">
-                {game && state == "waiting" &&
-                    <div className="notification notification-page">
-                        <div className="alert">
-                            <div className="title">{`New Challenge!`}</div>
-                            <div className="challenger">{`${challenger}`} <div className="trophies"><img width="16" height="16" src="icons/trophy.png" />{challengerLevel}</div></div>
-                        </div>
-                        <div className="response">
-                            <button className="dull" onClick={() => cancelGame(game)}>X</button>
-                            <button onClick={() => startGame(game)}>Accept</button>
-                        </div>
-                    </div>
-                }
-            </div>
-            <div className="">
+    if (!game) return <ThreeAppCanvas view="loading" user={user} />;
 
-            </div>
-        </div>
-    );
+    return <ThreeAppCanvas
+        view="accept"
+        user={user}
+        data={{ invitation: game && state === 'waiting' ? { id: game, name: challenger, level: challengerLevel } : null }}
+        actions={{
+            home: () => navigate('/'),
+            active: () => navigate('/active'),
+            friends: () => navigate('/friends'),
+            recent: () => navigate('/recent'),
+            acceptInvite: () => game && startGame(game),
+            declineInvite: () => game && cancelGame(game),
+        }}
+    />;
 }

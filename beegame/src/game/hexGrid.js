@@ -5,11 +5,13 @@ export const BOARD_COORDS = Object.freeze([
     [-2, 2], [-2, 1], [-1, -1], [0, -2], [1, -2], [-2, 0], [2, 0],
 ]);
 
-/** Convert the game's flat-top axial coordinates to an X/Z plane. */
+export const POINTY_TOP_ROTATION = 0;
+
+/** Convert pointy-top axial coordinates to an X/Z plane. */
 export function axialToWorld(q, r, radius = 0.72) {
     return {
-        x: 1.5 * radius * q,
-        z: Math.sqrt(3) * radius * (r + q / 2),
+        x: Math.sqrt(3) * radius * (q + r / 2),
+        z: 1.5 * radius * r,
     };
 }
 
