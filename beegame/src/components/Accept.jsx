@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { collection, onSnapshot, doc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import { useNavigate, useParams } from 'react-router-dom';
 import { db } from '../firebase';
+import { ThreeAppCanvas } from './ThreeAppCanvas';
 
-export function Accept() {
+export function Accept({ user }) {
     const navigate = useNavigate();
     const [game, setGame] = useState(null);
     const [challenger, setChallenger] = useState(null);
@@ -12,38 +13,35 @@ export function Accept() {
     const { gameId } = useParams();
 
     useEffect(() => {
-        const unsubscribe = onSnapshot(collection(db, 'Games'), (snapshot) => {
+        let active = true;
+        const unsubscribe = onSnapshot(collection(db, 'Games'), async (snapshot) => {
+            const invitation = snapshot.docs
+                .map(gameDoc => ({ id: gameDoc.id, ...gameDoc.data() }))
+                .find(item => item.id === gameId && item.State === 'waiting');
 
-            const games = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-
-            // Find the invitation for the current user
-            const invitation = games.find(u => u.id === gameId && u.State == "waiting");
-
-            if (invitation) {
-                (async () => {
-                    const opp = doc(db, "Users", invitation.Player1);
-                    const p1Snap = await getDoc(opp);
-
-                    if (p1Snap.exists()) {
-                        const gameId = invitation.id;
-                        setGame(gameId);
-                        setChallenger(invitation.P1Name);
-                        setChallengerLevel(p1Snap.data().level);
-                        setState(invitation.State);
-                    }
-                })();
-            } else {
-                setGame(null);  // Reset game if no invitation found
-                navigate('/friends');
+            if (!invitation) {
+                if (active) {
+                    setGame(null);
+                    navigate('/friends');
+                }
+                return;
             }
-        });
 
-        // Cleanup the listener when the component unmounts
-        return () => unsubscribe();
-    }, []);
+            try {
+                const challengerDoc = await getDoc(doc(db, 'Users', invitation.Player1));
+                if (active && challengerDoc.exists()) {
+                    setGame(invitation.id);
+                    setChallenger(invitation.P1Name || 'A fellow beekeeper');
+                    setChallengerLevel(challengerDoc.data().level);
+                    setState(invitation.State);
+                }
+            } catch (error) {
+                console.error('Unable to load the challenger profile:', error);
+            }
+        }, (error) => console.error('Unable to load invitation:', error));
+
+        return () => { active = false; unsubscribe(); };
+    }, [gameId, navigate]);
 
     const startGame = async (gameId) => {
         try {
@@ -68,25 +66,19 @@ export function Accept() {
     }
 
 
-    return (
-        <div className="page">
-            <div className="page-content notification-page-content">
-                {game && state == "waiting" &&
-                    <div className="notification notification-page">
-                        <div className="alert">
-                            <div className="title">{`New Challenge!`}</div>
-                            <div className="challenger">{`${challenger}`} <div className="trophies"><img width="16" height="16" src="icons/trophy.png" />{challengerLevel}</div></div>
-                        </div>
-                        <div className="response">
-                            <button className="dull" onClick={() => cancelGame(game)}>X</button>
-                            <button onClick={() => startGame(game)}>Accept</button>
-                        </div>
-                    </div>
-                }
-            </div>
-            <div className="">
+    if (!game) return <ThreeAppCanvas view="loading" user={user} />;
 
-            </div>
-        </div>
-    );
+    return <ThreeAppCanvas
+        view="accept"
+        user={user}
+        data={{ invitation: game && state === 'waiting' ? { id: game, name: challenger, level: challengerLevel } : null }}
+        actions={{
+            home: () => navigate('/'),
+            active: () => navigate('/active'),
+            friends: () => navigate('/friends'),
+            recent: () => navigate('/recent'),
+            acceptInvite: () => game && startGame(game),
+            declineInvite: () => game && cancelGame(game),
+        }}
+    />;
 }

@@ -1,16 +1,18 @@
-import { useState, useEffect } from 'react'
-import GameBoard from './GameBoard'
-import '../App.css'
-import PlayerHand from './PlayerHand'
-import { Confirmation } from './Confirmation'
+import { lazy, Suspense, useState, useEffect } from 'react'
+import { BOARD_COORDS } from '../game/hexGrid.js';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useSwipeable } from 'react-swipeable';
-import { doc, onSnapshot, updateDoc, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import { ThreeAppCanvas } from './ThreeAppCanvas';
 
-export function Game({ onRematch, online = false, p1, p2, gameData, user, resignGame = null, staged = false }) {
+const ThreeGameBoard = lazy(() => import('./ThreeGameBoard.jsx').then(module => ({ default: module.ThreeGameBoard })));
 
-    const player = !user || user.username == p1 ? 1 : 2;
+export function Game({ online = false, gameData, user, onRematch }) {
+
+    const viewerId = typeof user === 'string' ? user : user?.id;
+    const player = online
+        ? (viewerId && gameData?.Player1 === viewerId ? 1 : 2)
+        : 1;
     const { gameId: gameId } = useParams();
 
     const [pieces, setPieces] = useState([]);
@@ -92,7 +94,7 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user, resign
             const shuffled = shuffle(cards);
             setCards1(shuffled.slice(0, 2));
             setCards2(shuffled.slice(2, 4));
-            setExtraCard(shuffled[5]);
+            setExtraCard(shuffled[4]);
         }
     }, [gameData, online]);
 
@@ -101,14 +103,12 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user, resign
     const [previewPosition, setPreviewPosition] = useState(null);
     const [isConfirming, setIsConfirming] = useState(false);
     
-    const [count, setCount] = useState(0);
     const [card, setCard] = useState(0);
     const [piece, setPiece] = useState(0);
     
-    const [gameOver, setGameOver] = useState(false);
     const [winner, setWinner] = useState(null);
     const [winType, setWinType] = useState(null);
-    const [boardFlips, setBoardFlips] = useState(!online);
+    const [leaveConfirm, setLeaveConfirm] = useState(false);
     const navigate = useNavigate();
 
     const changeTurn = () => {
@@ -124,12 +124,7 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user, resign
         
     }
 
-    const coords = [
-        [0, 0],
-        [1, -1], [1, 0], [0, 1], [-1, 1], [-1, 0], [0, -1],
-        [2, -2], [2, -1], [1, 1], [0, 2], [-1, 2],
-        [-2, 2], [-2, 1], [-1, -1], [0, -2], [1, -2], [-2, 0], [2, 0]
-    ];
+    const coords = BOARD_COORDS;
 
     const previewMove = (newPosition) => {
 
@@ -359,84 +354,58 @@ export function Game({ onRematch, online = false, p1, p2, gameData, user, resign
 
     const [menuOpen, setMenuOpen] = useState(false);
 
-    const handlers = useSwipeable({
-        onSwipedRight: (eventData) => {
-            setMenuOpen(false)
-            if (eventData.initial[0] < 60 && online) {
-                // Only open if swipe starts from right edge
-                navigate('/active');
-            }
-        },
-        onSwipedLeft: (eventData) => {
-            console.log(eventData.initial[1] - window.innerWidth);
-            if (eventData.initial[0] > window.innerWidth - 60) {
-                // Only open if swipe starts from right edge
-                setMenuOpen(true);
-            }
-        },
-        delta: 30, // minimum distance(px) to count as swipe
-        trackTouch: true,
-        trackMouse: true
-    });
     const resign = async () => {
-        if (window.confirm("Are you sure you want to resign?")) {
-            let winner = "";
-            let loser = "";
-            let winnerUpdate = "";
-            let winTypeUpdate = "Resignation";
+        if (!online || !gameData || !gameId) return;
+        let winner = '';
+        let loser = '';
+        let winnerUpdate = '';
+        const winTypeUpdate = 'Resignation';
 
-            if (player === 2) {
-                winnerUpdate = "Red";
-                winner = gameData.Player1;
-                loser = gameData.Player2;
-                setWinner("Red");
-            }
-            if (player === 1) {
-                winnerUpdate = "Blue";
-                loser = gameData.Player1;
-                winner = gameData.Player2;
-                setWinner("Blue");
-            }
-
-            setWinType(winTypeUpdate);
-
-            const { winnerChange, loserChange } = await setLevel(winner, loser);
-
-            await updateDoc(doc(db, "Games", gameId), {
-                Winner: winnerUpdate ?? "",
-                State: "finished",
-                WinType: winTypeUpdate,
-                WinnerChange: winnerChange,
-                LoserChange: loserChange,
-                End: new Date()
-            });
+        if (player === 2) {
+            winnerUpdate = 'Red';
+            winner = gameData.Player1;
+            loser = gameData.Player2;
+        } else {
+            winnerUpdate = 'Blue';
+            winner = gameData.Player2;
+            loser = gameData.Player1;
         }
+
+        setWinner(winnerUpdate);
+        setWinType(winTypeUpdate);
+        setLeaveConfirm(false);
+        const { winnerChange: nextWinnerChange, loserChange: nextLoserChange } = await setLevel(winner, loser);
+        setWinnerChange(nextWinnerChange);
+        setLoserChange(nextLoserChange);
+
+        await updateDoc(doc(db, 'Games', gameId), {
+            Winner: winnerUpdate,
+            State: 'finished',
+            WinType: winTypeUpdate,
+            WinnerChange: nextWinnerChange,
+            LoserChange: nextLoserChange,
+            End: new Date(),
+        });
     };
 
     const quit = async () => {
-        if (window.confirm("Are you sure you want to Quit?")) {
-            navigate("/");
-        }
+        setLeaveConfirm(false);
+        setMenuOpen(false);
+        navigate(online ? '/active' : '/');
     };
 
-    return (
-        <div style={{ display: "contents" }} className="gameWrapper" {...handlers} >
-            {online && !staged && <div className="page-global page-header">
-                
-                <div>
-                    <div className="footer-button" onClick={() => navigate("/active")}>
-                        <img width="20" src="/icons/exit.png" />
-
-                    </div>
-                </div>
-                <div>
-                    <div className="turn-indicator">
-                        {turn == player ? "Your Turn" : "Waiting for Opponent"}
-                    </div>
-                </div>
-                <div>
-                    <div className="footer-button" onClick={() => resign()}>
-                        <img width="20" src="/icons/flag.png" />
+    const handleCanvasAction = (action, payload) => {
+        if (action === 'selectCard') onSelectCard(payload);
+        else if (action === 'confirmMove') confirm();
+        else if (action === 'cancelMove') cancel();
+        else if (action === 'openMenu') setMenuOpen(true);
+        else if (action === 'resume') { setMenuOpen(false); setLeaveConfirm(false); }
+        else if (action === 'requestLeave' || action === 'requestResign') setLeaveConfirm(true);
+        else if (action === 'cancelLeave') setLeaveConfirm(false);
+        else if (action === 'confirmLeave') online ? resign() : quit();
+        else if (action === 'exitMatch') navigate(online ? '/active' : '/');
+        else if (action === 'rematch') onRematch?.();
+    };
 
                     </div>
                 </div>

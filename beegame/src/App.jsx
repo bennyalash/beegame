@@ -14,6 +14,7 @@ import { RecentGames } from './components/RecentGames';
 import { subscribeToPushNotifications } from './functions/index';
 import { sendNotification } from './functions/sendNotification';
 import { Accept } from './components/Accept';
+import { ThreeAppCanvas } from './components/ThreeAppCanvas';
 
 
 import './App.css';
@@ -57,6 +58,7 @@ function App() {
     }
 
     const login = async () => {
+        setLoginError('');
         try {
             const result = await signInWithPopup(auth, provider);
             const fbuser = result.user;
@@ -65,6 +67,9 @@ function App() {
 
         } catch (error) {
             console.error('Login failed:', error);
+            setLoginError(error?.code === 'auth/popup-blocked'
+                ? 'Your browser blocked the sign-in window. Allow pop-ups for this site and try again.'
+                : 'Sign-in could not be completed. Please try again.');
         }
     };
 

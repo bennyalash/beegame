@@ -1,0 +1,23 @@
+# BeeGame implementation outcomes
+
+- [x] **All visible app UI is rendered in Three.js scenes.** The user said the whole thing should be in a 3D Three.js canvas, not just the board. The sign-in, home/lobby, friends and game-list screens, notification settings, in-match HUD/cards/menu, and win/loss result UI must be visible 3D scene content. Keep existing React/Firebase state and route behavior as the controller layer; preserve keyboard and screen-reader access without substituting visible DOM UI for the canvas.
+
+- [x] **The visual direction combines competitive clarity with playful dimensional character design.** The user wants something between Chess.com's app and Clash Royale, in both UI/UX and character design. Keep information readable and original: do not copy characters, brand marks, or screen layouts from either reference. Give the bee characters a deliberate, reusable 3D design rather than relying on flat UI art or simple placeholder cylinders.
+
+- [x] **The hex board is pointy-top and correctly oriented for the player.** The user explicitly requires pointy-top hex orientation and reported the board upside down on the opponent's turn. Align Three.js tile geometry, axial board spacing, card move diagrams and any remaining 2D preview geometry; in an online game keep the camera fixed to the signed-in player's side across turns, and in a local hot-seat game orient the active seat correctly.
+
+- [x] **Notifications and core app behavior are preserved.** Push notifications and email notifications must continue to work consistently, including their in-app UI/UX, persisted preferences, and existing delivery flows; friends, invitations, multiplayer games, AI/local games, game history, and match-result behavior must remain functional.
+
+- [x] **The app remains downloadable and works on desktop without requiring an install.** Keep the PWA manifest, service worker and installable web-app behavior intact; desktop users must be able to play in the browser with a full responsive layout, with installation optional.
+
+**Verification notes:** ESLint passes; all seven tests pass, including native pointy-top mesh geometry, the full 19-cell move-card field, a Three.js card-face raycast, and dynamic confirmation/menu controls. The production PWA build succeeds and emits the manifest, service worker, and eight-route manifest. A remote desktop browser confirmed a 1280×1100 full-canvas layout; the app scene was also resized to a 390×844 portrait host and visually checked for fitting content. The phone-sized scene was emulated inside the desktop browser rather than on a physical device, so actual device safe-area behavior remains to be confirmed. Browser tests generated HUD state and raycast targets without changing game data; no live Firebase match, push/email delivery, or high-DPI physical device was used. A WebGL-unavailable browser shows an accessible message instead of legacy 2D match controls.
+
+## Player-reported experience fixes — 2026-11-07
+
+- [x] **Home page polish:** Removed the floating decorative hex clutter, tightened the login/home hierarchy and card proportions, and replaced excessive shiny outlines with matte, restrained surfaces. (A signed-in home session was not available for a separate live screenshot.)
+- [x] **Consistent buttons and spacing:** Standardized button surfaces, text scale, arrows, and compact-layout thresholds across the Three.js scene panels and match HUD.
+- [x] **Responsive behavior:** Updated camera framing and compact HUD breakpoints for narrow and near-square layouts; the 390×844 portrait scene was visually checked. Tablet, landscape-phone, and physical safe-area checks remain desirable.
+- [x] **True full-screen layout:** Forced the Three.js match scene and accessible WebGL fallback to fill the safe-area-adjusted viewport, overriding legacy board max-width and height rules. Confirmed the app canvas filled desktop and portrait-sized hosts.
+- [x] **Functional gameplay controls:** Fixed the missing HUD-group ref that left move confirmation and menus stale after React state changes. Added tests for card raycast hits and the generated confirm/cancel and menu controls; Firebase persistence and a complete live match were not exercised.
+- [x] **Move-card hex diagrams:** Added the full 19-cell pointy-top board field, fading unused cells and highlighting the origin and move vectors; regression tests compare the diagram coordinates with the shared axial board coordinates.
+- [x] **Sharp rendering:** Renderers now honor device pixel ratios up to 2.5; panel textures scale with world dimensions and use mipmapped, sRGB filtering. Normal-density desktop and portrait-host previews were visually inspected; no physical high-DPI device was available.

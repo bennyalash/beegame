@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { collection, getDocs, doc, updateDoc, arrayUnion, arrayRemove, addDoc, onSnapshot, deleteDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
-import "../online.css";
+import { ThreeAppCanvas } from './ThreeAppCanvas';
 
 export function Friends({ logout, user, sendNotification}) {
     const navigate = useNavigate();
@@ -62,10 +62,10 @@ export function Friends({ logout, user, sendNotification}) {
             const search = userSearch.toLowerCase();
 
             const filtered = allUsers
-                .filter(user => user.username?.toLowerCase().includes(search))
+                .filter(user => (user.username || user.name || '').toLowerCase().includes(search))
                 .sort((a, b) => {
-                    const aName = a.username.toLowerCase();
-                    const bName = b.username.toLowerCase();
+                    const aName = (a.username || a.name || '').toLowerCase();
+                    const bName = (b.username || b.name || '').toLowerCase();
 
                     // Prioritize exact match > startsWith > includes
                     if (aName === search) return -1;
@@ -337,7 +337,27 @@ export function Friends({ logout, user, sendNotification}) {
             </div>
             <div className="">
 
-            </div>
-        </div>
-    );
+    return <ThreeAppCanvas
+        view="friends"
+        user={user}
+        searchValue={userSearch}
+        onSearchChange={setUserSearch}
+        data={{
+            friendUsers: friends,
+            requestUsers: requests,
+            filteredUsers: filtered,
+            invitation: game && state === 'waiting' ? { id: game, name: challenger } : null,
+        }}
+        actions={{
+            home: () => navigate('/'),
+            active: () => navigate('/active'),
+            friends: () => navigate('/friends'),
+            recent: () => navigate('/recent'),
+            sendFriendRequest: (payload) => sendFriendRequest(payload?.id),
+            acceptFriendRequest,
+            sendChallenge: (payload) => sendChallenge(payload?.id, payload?.name),
+            acceptInvite: () => game && startGame(game),
+            declineInvite: () => game && cancelGame(game),
+        }}
+    />;
 }

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { collection, onSnapshot, doc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
+import { ThreeAppCanvas } from './ThreeAppCanvas';
 
 export function Home({ logout, user, sendNotification, notificationsStatus, enableNotifications }) {
     const navigate = useNavigate();

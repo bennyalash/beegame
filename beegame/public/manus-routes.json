@@ -1,0 +1,1 @@
+{"routes":[{"path":"/","title":"Go Bee"},{"path":"/game","title":"Local Game"},{"path":"/aigame","title":"AI Game"},{"path":"/game/:gameId","title":"Online Game"},{"path":"/friends","title":"Friends"},{"path":"/active","title":"Active Games"},{"path":"/recent","title":"Recent Games"},{"path":"/accept/:gameId","title":"Accept Challenge"}]}

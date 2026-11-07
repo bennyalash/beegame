@@ -1,5 +1,4 @@
 import React from 'react';
-import { useState } from 'react'
 
 const HexTile = ({ q, r, children, piece, onSelectPiece, isSelected, move, onMove, turn, highlight, online, p }) => {
     const hexWidth = 79; // width of each hex
@@ -13,8 +12,6 @@ const HexTile = ({ q, r, children, piece, onSelectPiece, isSelected, move, onMov
 
     const start = q == 0 && r * r == 4;
     const player = r > 0 ? 1 : 2; 
-
-    const [toggle, setToggle] = useState(false);
 
     return (
         <div

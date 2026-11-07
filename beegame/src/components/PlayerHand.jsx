@@ -1,7 +1,7 @@
 import React from 'react';
 import Card from './Card';
 
-const PlayerHand = ({ cards, selectedCardIndex, onSelectCard, opponent, top, extraCard, turn, player, online }) => {
+const PlayerHand = ({ cards, selectedCardIndex, onSelectCard, opponent, top, extraCard, turn }) => {
 
     return (
         <div className={`player-hand${top ? " top" : ""}`}>
@@ -17,7 +17,7 @@ const PlayerHand = ({ cards, selectedCardIndex, onSelectCard, opponent, top, ext
                 card={extraCard}
                 ignore={true}
             /> : <></>}
-            {cards.map((card, index) => (
+            {cards.map((card) => (
                 <Card
                     key={card?.name}
                     card={card}
