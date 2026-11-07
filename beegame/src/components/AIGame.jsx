@@ -1,15 +1,12 @@
 import { lazy, Suspense, useState, useEffect, useRef } from 'react'
 import { BOARD_COORDS } from '../game/hexGrid.js';
-import '../App.css'
-import PlayerHand from './PlayerHand'
-import { Confirmation } from './Confirmation'
 import { useNavigate } from 'react-router-dom';
 import { getBestAIMove } from '../ai/ai';
-import MatchResult from './MatchResult';
+import { ThreeAppCanvas } from './ThreeAppCanvas';
 
 const ThreeGameBoard = lazy(() => import('./ThreeGameBoard.jsx').then(module => ({ default: module.ThreeGameBoard })));
 
-export function AIGame() {
+export function AIGame({ onRematch }) {
 
     const [pieces, setPieces] = useState([]);
     const [cards1, setCards1] = useState([]);
@@ -207,12 +204,13 @@ export function AIGame() {
     });*/
 
     const quit = async () => {
-        if (window.confirm("Are you sure you want to Leave? Your game will not be saved.")) {
-            navigate("/");
-        }
+        setLeaveConfirm(false);
+        setMenuOpen(false);
+        navigate('/');
     };
 
     const [aiMove, setAiMove] = useState(null);
+    const [leaveConfirm, setLeaveConfirm] = useState(false);
 
     useEffect(() => {
         if (turn === 2 && !winner) {
@@ -253,59 +251,48 @@ export function AIGame() {
         return () => { cancelled = true; };
     }, [aiMove, menuOpen]);
 
-    console.log(turn);
+    const handleCanvasAction = (action, payload) => {
+        if (action === 'selectCard') onSelectCard(payload);
+        else if (action === 'confirmMove') confirm();
+        else if (action === 'cancelMove') cancel();
+        else if (action === 'openMenu') setMenuOpen(true);
+        else if (action === 'resume') { setMenuOpen(false); setLeaveConfirm(false); }
+        else if (action === 'requestLeave') setLeaveConfirm(true);
+        else if (action === 'cancelLeave') setLeaveConfirm(false);
+        else if (action === 'confirmLeave') quit();
+        else if (action === 'exitMatch') navigate('/');
+        else if (action === 'rematch') onRematch?.();
+    };
 
-    return (
-        <div style={{ display: "contents" }} className="aigame gameWrapper">
-            
-            {/*<div className={`popup menu ${menuOpen ? "open" : "closed"}`}>
-                <h1>Settings!</h1>
-                <br />
-                <div className="auth-buttons">
-                    <button onClick={() => quit()}>Quit Game</button>
-                </div>
-            </div>*/}
-            <header className="game-topbar">
-                <button className="game-icon-button" aria-label="Leave AI match" onClick={() => quit()}>
-                    <img src="/icons/exit.png" alt="" />
-                </button>
-                <div className="game-brand-mark">
-                    <img src="/icons/hive.png" alt="" />
-                    <span>GO BEE</span>
-                    <small>AI CHALLENGE</small>
-                </div>
-                <div className="game-turn-pill">
-                    <span className={`game-turn-dot player-${turn}`} />
-                    <span>{turn === 1 ? "YOUR TURN" : "AI THINKING"}</span>
-                </div>
-                <button className="game-menu-button" onClick={() => setMenuOpen(true)} aria-label="Open game menu">
-                    <span aria-hidden="true">Ⅱ</span> MENU
-                </button>
-            </header>
-            {menuOpen && !winner && <div className="game-menu-overlay" onClick={() => setMenuOpen(false)}>
-                <section className="game-menu-card" role="dialog" aria-modal="true" aria-labelledby="ai-game-menu-title" onClick={event => event.stopPropagation()}>
-                    <p className="game-menu-eyebrow">MATCH PAUSED</p>
-                    <h2 id="ai-game-menu-title">Ready, strategist?</h2>
-                    <p className="game-menu-copy">Choose one of your cards, select one of your bees, then move to a glowing hex. Protect your queen and trap the rival queen to win.</p>
-                    <button className="game-menu-primary" onClick={() => setMenuOpen(false)}>Resume match</button>
-                    <button className="game-menu-secondary" onClick={() => quit()}>Leave game</button>
-                </section>
-            </div>}
-            {winner && <MatchResult
-                winner={winner}
-                winType={winType}
-                didWin={winner === 'Red'}
-                onExit={() => navigate('/')}
-            />}
-            <div className={`game ai-game-board${winner ? " gameOver" : ""}${turn == 1 ? " t1" : " t2"}`}>
-                <PlayerHand extraCard={extraCard} turn={turn} top={true} selectedCardIndex={card} cards={cards1} opponent={turn != 1} onSelectCard={onSelectCard} />
-                <Confirmation cancel={cancel} confirm={confirm} good={isConfirming && previewPosition && piece && !winner && turn == 1} />
-                <Suspense fallback={<div className="board three-board-loading" role="status">Preparing the 3D hive…</div>}>
-                    <ThreeGameBoard p={1} humanPlayer={1} viewFlipped lms={lastMoveStart} lme={lastMoveEnd} turn={turn} onMove={previewMove} card={card} piece={piece} previewPosition={previewPosition} onSelectPiece={onSelectPiece} selectedPiece={piece} coords={coords} pieces={pieces} />
-                </Suspense>
-                <PlayerHand extraCard={extraCard} turn={turn} top={false} selectedCardIndex={card} cards={cards2} opponent={true} onSelectCard={onSelectCard} />
-            </div>
-
-        </div>
-    )
+    return <Suspense fallback={<ThreeAppCanvas view="loading" />}>
+        <ThreeGameBoard
+            p={1}
+            mode="ai"
+            humanPlayer={1}
+            viewFlipped
+            lms={lastMoveStart}
+            lme={lastMoveEnd}
+            turn={turn}
+            onMove={previewMove}
+            onSelectPiece={onSelectPiece}
+            onUiAction={handleCanvasAction}
+            isConfirming={Boolean(isConfirming && previewPosition && piece)}
+            menuOpen={menuOpen}
+            leaveConfirm={leaveConfirm}
+            winner={winner}
+            winType={winType}
+            didWin={winner === null ? null : winner === 'Red'}
+            cards1={cards1}
+            cards2={cards2}
+            extraCard={extraCard}
+            card={card}
+            piece={piece}
+            previewPosition={previewPosition}
+            selectedPiece={piece}
+            coords={coords}
+            pieces={pieces}
+            p1Name="YOU"
+            p2Name="HIVE RIVAL"
+        />
+    </Suspense>;
 }

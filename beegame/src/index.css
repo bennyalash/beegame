@@ -460,7 +460,7 @@ font-size: 42px;
     width: 77px;
     height: 75px;
     background: var(--yellow2);
-    clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
+    clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -521,7 +521,7 @@ font-size: 42px;
             width: 100%;
             height: 100%;
             background: #b78000;
-            clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
+            clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
             z-index: 1;
             transform: scale(0.25, 0.2) translateY(50px);
         }
@@ -541,8 +541,7 @@ font-size: 42px;
 }
 
 .hex-tile.start.start-2 {
-    /*clip-path: polygon(25% 5%, 100% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);*/
-    clip-path: polygon(50% 5%, 50% 5%, 100% 61.5%, 75% 95%, 25% 95%, 0% 61.5%);
+    clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
     height: 100px;
     margin-top: -22px;
     padding-top:0px;
@@ -551,8 +550,7 @@ font-size: 42px;
     transform:translateY(10px);
 }
 .hex-tile.start.start-1 {
-    /*clip-path: polygon(25% 5%, 100% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);*/
-    clip-path: polygon(25% 5%, 75% 5%, 100% 38.5%, 50% 95%, 50% 95%, 0% 38.5%);
+    clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
     height: 100px;
     margin-bottom: -22px;
     padding-top: 0px;

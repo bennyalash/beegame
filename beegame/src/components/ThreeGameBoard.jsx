@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { axialKey, axialToWorld, getLegalMoveDestinations } from '../game/hexGrid.js';
-import GameBoard from './GameBoard.jsx';
+import { axialKey, axialToWorld, getLegalMoveDestinations, POINTY_TOP_ROTATION } from '../game/hexGrid.js';
+import { createBeeChampion } from '../three/characters/beeChampion.js';
+import { buildGameHud } from '../three/ui/gameHud.js';
+import '../three/ui/threeCanvas.css';
 
 const HEX_RADIUS = 0.76;
 const PIECE_BASE_Y = 0.36;
@@ -16,65 +18,15 @@ function makeMaterial(color, options = {}) {
     });
 }
 
-function setShadowFlags(group) {
-    group.traverse((object) => {
-        if (object.isMesh) {
-            object.castShadow = true;
-            object.receiveShadow = true;
-        }
-    });
-}
-
 function makePieceModel(piece, ghost = false) {
-    const group = new THREE.Group();
+    const group = createBeeChampion({
+        teamColor: piece.player === 1 ? '#d65c4f' : '#4f91c1',
+        queen: piece.type === 'queen',
+        ghost,
+    });
     group.userData.pieceId = piece.id;
     group.userData.piece = piece;
     group.userData.coordinate = [piece.position.x, piece.position.y];
-    const color = piece.player === 1 ? '#e45b52' : '#56aaf0';
-    const opacity = ghost ? 0.48 : 1;
-    const transparent = ghost;
-    const body = makeMaterial(color, { transparent, opacity, roughness: 0.34, metalness: 0.18 });
-    const trim = makeMaterial('#f1c46f', { transparent, opacity, metalness: 0.72, roughness: 0.25 });
-    const dark = makeMaterial('#18242a', { transparent, opacity, roughness: 0.55 });
-
-    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.27, 0.31, 0.11, 10), trim);
-    base.position.y = 0.07;
-    group.add(base);
-
-    const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.24, 0.35, 9), body);
-    torso.position.y = 0.29;
-    group.add(torso);
-
-    const belly = new THREE.Mesh(new THREE.SphereGeometry(0.19, 20, 14), body);
-    belly.scale.set(1, 0.74, 1);
-    belly.position.y = 0.47;
-    group.add(belly);
-
-    const head = new THREE.Mesh(new THREE.SphereGeometry(piece.type === 'queen' ? 0.17 : 0.135, 20, 16), trim);
-    head.position.y = piece.type === 'queen' ? 0.66 : 0.63;
-    group.add(head);
-
-    if (piece.type === 'queen') {
-        const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.22, 0.19, 7), trim);
-        crown.position.y = 0.83;
-        group.add(crown);
-        const crownBand = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.025, 8, 12), dark);
-        crownBand.rotation.x = Math.PI / 2;
-        crownBand.position.y = 0.77;
-        group.add(crownBand);
-        for (let i = 0; i < 5; i += 1) {
-            const angle = (i / 5) * Math.PI * 2;
-            const point = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 8), trim);
-            point.position.set(Math.cos(angle) * 0.15, 0.95, Math.sin(angle) * 0.15);
-            group.add(point);
-        }
-    } else {
-        const antenna = new THREE.Mesh(new THREE.ConeGeometry(0.055, 0.16, 7), trim);
-        antenna.position.y = 0.79;
-        group.add(antenna);
-    }
-
-    setShadowFlags(group);
     return group;
 }
 
@@ -117,12 +69,33 @@ function updateTileLook(tile, props, hoveredKey) {
     }
 }
 
+function findUiAction(object) {
+    let current = object;
+    while (current) {
+        if (current.userData?.action) return current;
+        current = current.parent;
+    }
+    return null;
+}
+
+function samePayload(left, right) {
+    if (left === right) return true;
+    try {
+        return JSON.stringify(left) === JSON.stringify(right);
+    } catch {
+        return false;
+    }
+}
+
 function disposeTree(root) {
     root.traverse((object) => {
         if (object.geometry) object.geometry.dispose();
         if (object.material) {
             const materials = Array.isArray(object.material) ? object.material : [object.material];
-            materials.forEach((material) => material.dispose());
+            materials.forEach((material) => {
+                material.map?.dispose();
+                material.dispose();
+            });
         }
     });
 }
@@ -140,15 +113,37 @@ export function ThreeGameBoard({
     coords,
     pieces = [],
     onMove,
+    isConfirming = false,
     turn = 1,
     humanPlayer,
     viewFlipped = false,
+    mode = 'local',
+    cards1 = [],
+    cards2 = [],
+    extraCard = null,
+    menuOpen = false,
+    leaveConfirm = false,
+    winner = null,
+    winType = null,
+    didWin = null,
+    ratingDelta = null,
+    p1Name = 'PLAYER 1',
+    p2Name = 'PLAYER 2',
+    p1Level,
+    p2Level,
+    onRematch,
+    onUiAction,
 }) {
     const hostRef = useRef(null);
     const propsRef = useRef(null);
     const sceneRef = useRef(null);
     const cameraRef = useRef(null);
     const rendererRef = useRef(null);
+    const uiGroupRef = useRef(null);
+    const uiTargetsRef = useRef([]);
+    const keyboardIndexRef = useRef(-1);
+    const viewAspectRef = useRef(1);
+    const viewHeightRef = useRef(12.2);
     const tileMapRef = useRef(new Map());
     const tileFacesRef = useRef([]);
     const piecesRef = useRef(new Map());
@@ -172,17 +167,66 @@ export function ThreeGameBoard({
         lme,
         previewPosition,
         card,
+        selectedCard: card,
         piece,
         onSelectPiece,
         selectedPiece,
         coords: boardCoords,
         pieces,
         onMove,
+        isConfirming,
         turn,
+        player: p,
         humanPlayer: humanPlayer ?? (online ? p : null),
         viewFlipped,
         legalMoves,
+        mode,
+        cards1,
+        cards2,
+        extraCard,
+        menuOpen,
+        leaveConfirm,
+        winner,
+        winType,
+        didWin,
+        ratingDelta,
+        p1Name,
+        p2Name,
+        topPlayerName: mode === 'ai' ? 'HIVE RIVAL' : (mode === 'online' ? (p === 1 ? p2Name : p1Name) : (turn === 1 ? p2Name : p1Name)),
+        bottomPlayerName: mode === 'ai' ? 'YOUR HAND' : (mode === 'online' ? (p === 1 ? p1Name : p2Name) : (turn === 1 ? p1Name : p2Name)),
+        leftSideName: p1Name,
+        rightSideName: p2Name,
+        p1Level,
+        p2Level,
+        onRematch,
+        onUiAction,
     };
+
+    const focusGameControl = (kind, action, payload) => {
+        uiTargetsRef.current.forEach((target) => target.scale.setScalar(1));
+        for (const group of piecesRef.current.values()) group.scale.setScalar(1);
+        for (const tile of tileMapRef.current.values()) tile.group.scale.setScalar(1);
+
+        let target;
+        if (kind === 'piece') target = piecesRef.current.get(payload.id);
+        else if (kind === 'move') target = tileMapRef.current.get(axialKey(payload[0], payload[1]))?.group;
+        else target = uiTargetsRef.current.find((candidate) => candidate.userData.action === action
+            && (payload === undefined || samePayload(candidate.userData.payload, payload)));
+        target?.scale.setScalar(1.05);
+    };
+
+    const clearGameControlFocus = () => {
+        uiTargetsRef.current.forEach((target) => target.scale.setScalar(1));
+        for (const group of piecesRef.current.values()) group.scale.setScalar(1);
+        for (const tile of tileMapRef.current.values()) tile.group.scale.setScalar(1);
+        keyboardIndexRef.current = -1;
+    };
+
+    useEffect(() => {
+        const uiGroup = uiGroupRef.current;
+        if (!uiGroup) return;
+        uiTargetsRef.current = buildGameHud(uiGroup, propsRef.current, viewAspectRef.current, viewHeightRef.current);
+    });
 
     useEffect(() => {
         const host = hostRef.current;
@@ -191,11 +235,12 @@ export function ThreeGameBoard({
         let resizeObserver;
         let pointerMove;
         let pointerDown;
+        let keyDown;
         let animationFrame;
         try {
             const scene = new THREE.Scene();
-            scene.background = new THREE.Color('#20362e');
-            scene.fog = new THREE.Fog('#20362e', 13, 28);
+            scene.background = new THREE.Color('#111c29');
+            scene.fog = new THREE.Fog('#111c29', 13, 28);
 
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
             renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -205,14 +250,18 @@ export function ThreeGameBoard({
             renderer.toneMappingExposure = 1.18;
             renderer.outputColorSpace = THREE.SRGBColorSpace;
             renderer.domElement.className = 'three-board-canvas';
-            renderer.domElement.setAttribute('aria-label', 'Interactive 3D hex board. Select one of your pieces, choose a movement card, then choose a highlighted destination.');
-            renderer.domElement.setAttribute('role', 'img');
+            renderer.domElement.setAttribute('aria-label', 'Go Bee 3D match. Use arrow keys to highlight scene controls, Enter to activate, and Tab to reach labeled game actions.');
+            renderer.domElement.setAttribute('role', 'application');
             renderer.domElement.tabIndex = 0;
             host.appendChild(renderer.domElement);
 
             const camera = new THREE.OrthographicCamera(-5, 5, 5, -5, 0.1, 100);
             camera.position.set(8, 10, 9);
             camera.lookAt(0, 0, 0);
+            scene.add(camera);
+            const uiGroup = new THREE.Group();
+            uiGroup.position.z = -5.7;
+            camera.add(uiGroup);
 
             scene.add(new THREE.HemisphereLight('#f7efd8', '#26392c', 1.8));
             const keyLight = new THREE.DirectionalLight('#fff2d8', 3.4);
@@ -257,6 +306,7 @@ export function ThreeGameBoard({
                 const tileGroup = new THREE.Group();
                 const world = axialToWorld(q, r, HEX_RADIUS);
                 tileGroup.position.set(world.x, 0, world.z);
+                tileGroup.rotation.y = POINTY_TOP_ROTATION;
                 tileGroup.userData.coordinate = [q, r];
 
                 const rim = new THREE.Mesh(new THREE.CylinderGeometry(HEX_RADIUS * 0.98, HEX_RADIUS, 0.22, 6), baseMaterial.clone());
@@ -296,6 +346,13 @@ export function ThreeGameBoard({
                 if (!rect.width || !rect.height) return null;
                 pointer.set(((event.clientX - rect.left) / rect.width) * 2 - 1, -((event.clientY - rect.top) / rect.height) * 2 + 1);
                 raycaster.setFromCamera(pointer, camera);
+                const uiHits = raycaster.intersectObjects(uiTargetsRef.current, true);
+                for (const uiHit of uiHits) {
+                    const actionTarget = findUiAction(uiHit.object);
+                    if (actionTarget) {
+                        return { uiAction: actionTarget.userData.action, payload: actionTarget.userData.payload };
+                    }
+                }
                 const pieceHits = raycaster.intersectObjects(allPieceObjects(), true);
                 const taggedPiece = pieceHits.find((hit) => findPieceId(hit.object));
                 if (taggedPiece) {
@@ -309,6 +366,10 @@ export function ThreeGameBoard({
 
             pointerMove = (event) => {
                 const hit = readHit(event);
+                if (hit?.uiAction) {
+                    renderer.domElement.style.cursor = 'pointer';
+                    return;
+                }
                 const nextKey = hit?.coordinate ? axialKey(...hit.coordinate) : null;
                 if (nextKey !== hoveredKeyRef.current) {
                     const previous = hoveredKeyRef.current;
@@ -324,7 +385,13 @@ export function ThreeGameBoard({
 
             pointerDown = (event) => {
                 if (event.button !== undefined && event.button !== 0) return;
+                renderer.domElement.focus({ preventScroll: true });
                 const hit = readHit(event);
+                if (hit?.uiAction) {
+                    event.preventDefault();
+                    propsRef.current.onUiAction?.(hit.uiAction, hit.payload);
+                    return;
+                }
                 if (!hit?.coordinate) return;
                 const props = propsRef.current;
                 const [q, r] = hit.coordinate;
@@ -339,20 +406,43 @@ export function ThreeGameBoard({
                 }
             };
 
+            keyDown = (event) => {
+                const actions = uiTargetsRef.current.filter((target) => target.userData?.action && target.userData.action !== 'noop');
+                if (!actions.length) return;
+                const count = actions.length;
+                const forward = event.key === 'ArrowRight' || event.key === 'ArrowDown';
+                const backward = event.key === 'ArrowLeft' || event.key === 'ArrowUp';
+                if (forward || backward) {
+                    event.preventDefault();
+                    keyboardIndexRef.current = keyboardIndexRef.current < 0
+                        ? (backward ? count - 1 : 0)
+                        : (keyboardIndexRef.current + (backward ? -1 : 1) + count) % count;
+                    uiTargetsRef.current.forEach((target) => target.scale.setScalar(1));
+                    actions[keyboardIndexRef.current]?.scale.setScalar(1.04);
+                } else if (event.key === 'Enter' || event.key === ' ') {
+                    const target = actions[keyboardIndexRef.current < 0 ? 0 : keyboardIndexRef.current];
+                    if (target?.userData?.action) propsRef.current.onUiAction?.(target.userData.action, target.userData.payload);
+                }
+            };
+
             renderer.domElement.addEventListener('pointermove', pointerMove);
             renderer.domElement.addEventListener('pointerdown', pointerDown);
+            renderer.domElement.addEventListener('keydown', keyDown);
 
             const resize = () => {
                 const width = host.clientWidth || 400;
                 const height = host.clientHeight || 400;
                 const aspect = width / height;
-                const frustumHeight = 8.9;
+                const frustumHeight = Math.max(12.2, 9.6 / aspect);
+                viewAspectRef.current = aspect;
+                viewHeightRef.current = frustumHeight;
                 camera.left = (-frustumHeight * aspect) / 2;
                 camera.right = (frustumHeight * aspect) / 2;
                 camera.top = frustumHeight / 2;
                 camera.bottom = -frustumHeight / 2;
                 camera.updateProjectionMatrix();
                 renderer.setSize(width, height, false);
+                uiTargetsRef.current = buildGameHud(uiGroup, propsRef.current, aspect, frustumHeight);
             };
             resizeObserver = new ResizeObserver(resize);
             resizeObserver.observe(host);
@@ -415,6 +505,7 @@ export function ThreeGameBoard({
             resizeObserver?.disconnect();
             if (renderer?.domElement && pointerMove) renderer.domElement.removeEventListener('pointermove', pointerMove);
             if (renderer?.domElement && pointerDown) renderer.domElement.removeEventListener('pointerdown', pointerDown);
+            if (renderer?.domElement && keyDown) renderer.domElement.removeEventListener('keydown', keyDown);
             if (rendererRef.current) {
                 for (const group of piecesRef.current.values()) disposeTree(group);
                 if (ghostRef.current) disposeTree(ghostRef.current);
@@ -425,6 +516,8 @@ export function ThreeGameBoard({
             rendererRef.current = null;
             sceneRef.current = null;
             cameraRef.current = null;
+            uiGroupRef.current = null;
+            uiTargetsRef.current = [];
             tileMapRef.current = new Map();
             tileFacesRef.current = [];
             piecesRef.current = new Map();
@@ -506,17 +599,34 @@ export function ThreeGameBoard({
         }
     }, [pieces, selectedPiece, piece, previewPosition, lms, lme, turn, card, legalMoves]);
 
+    const playableCards = mode === 'online'
+        ? (p === 1 ? cards1 : cards2)
+        : mode === 'ai'
+            ? cards1
+            : (turn === 1 ? cards1 : cards2);
+
     if (rendererError) {
-        return <div className="board three-board-fallback" role="application" aria-label="Fallback game board">
-            <div className="three-fallback-message" role="alert">3D graphics are unavailable here, so this match is using the classic board.</div>
-            <GameBoard p={p} online={online} lms={lms} lme={lme} previewPosition={previewPosition} card={card} piece={piece} onSelectPiece={onSelectPiece} selectedPiece={selectedPiece} coords={boardCoords} pieces={pieces} onMove={onMove} turn={turn} />
+        return <div className="board three-board-fallback" role="alert" aria-live="assertive">
+            <p className="three-board-error">3D graphics could not start in this browser. Enable WebGL or try a browser with hardware acceleration to play this match.</p>
         </div>;
     }
 
     return (
         <div ref={hostRef} className="board three-board" role="application" aria-label="Go Bee 3D game board">
-            {rendererError && <div className="three-board-error" role="alert">{rendererError}</div>}
-            <div className="three-board-hint" aria-hidden="true">Select a piece · pick a card · move to a glowing hex</div>
+            <nav className="three-a11y-controls" aria-label="Game controls" onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) clearGameControlFocus(); }}>
+                <span className="three-a11y-status" aria-live="polite">Go Bee match controls. Use Tab for labeled actions and arrow keys for scene controls.</span>
+                <button type="button" onFocus={() => focusGameControl('action', menuOpen ? 'resume' : 'openMenu')} onClick={() => onUiAction?.(menuOpen ? 'resume' : 'openMenu')}>{menuOpen ? 'Resume match' : 'Open game menu'}</button>
+                {playableCards.map((moveCard, index) => <button key={`${moveCard.name}-${index}`} type="button" onFocus={() => focusGameControl('action', 'selectCard', moveCard)} onClick={() => onUiAction?.('selectCard', moveCard)}>Select card {moveCard.name}</button>)}
+                {pieces.filter((item) => item.player === turn && (!humanPlayer || item.player === humanPlayer)).map((item) => <button key={item.id} type="button" onFocus={() => focusGameControl('piece', null, item)} onClick={() => onSelectPiece?.(item)}>Select {item.type} at hex {item.position.x}, {item.position.y}</button>)}
+                {legalMoves.map(([q, r]) => <button key={`${q},${r}`} type="button" onFocus={() => focusGameControl('move', null, [q, r])} onClick={() => onMove?.([q, r])}>Move to hex {q}, {r}</button>)}
+                {menuOpen && !winner && <button type="button" onFocus={() => focusGameControl('action', online ? 'requestResign' : 'requestLeave')} onClick={() => onUiAction?.(online ? 'requestResign' : 'requestLeave')}>{online ? 'Resign match' : 'Leave game'}</button>}
+                {leaveConfirm && <button type="button" onFocus={() => focusGameControl('action', 'confirmLeave')} onClick={() => onUiAction?.('confirmLeave')}>Confirm {online ? 'resignation' : 'leaving match'}</button>}
+                {leaveConfirm && <button type="button" onFocus={() => focusGameControl('action', 'cancelLeave')} onClick={() => onUiAction?.('cancelLeave')}>Cancel leaving match</button>}
+                {isConfirming && <button type="button" onFocus={() => focusGameControl('action', 'cancelMove')} onClick={() => onUiAction?.('cancelMove')}>Cancel move</button>}
+                {isConfirming && <button type="button" onFocus={() => focusGameControl('action', 'confirmMove')} onClick={() => onUiAction?.('confirmMove')}>Confirm move</button>}
+                {winner && <button type="button" onFocus={() => focusGameControl('action', 'exitMatch')} onClick={() => onUiAction?.('exitMatch')}>Back to the hive</button>}
+                {winner && onRematch && <button type="button" onFocus={() => focusGameControl('action', 'rematch')} onClick={() => onUiAction?.('rematch')}>Rematch</button>}
+            </nav>
         </div>
     );
 }

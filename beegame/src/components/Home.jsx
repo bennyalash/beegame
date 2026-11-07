@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { collection, onSnapshot, doc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
-import AppHeader from './AppHeader';
+import { ThreeAppCanvas } from './ThreeAppCanvas';
 
 export function Home({ logout, user, notificationsStatus, enableNotifications }) {
     const navigate = useNavigate();
@@ -54,8 +54,8 @@ export function Home({ logout, user, notificationsStatus, enableNotifications })
         return unsubscribe;
     }, [user.id, notificationsStatus]);
 
-    const togglePush = async (event) => {
-        const enabled = event.target.checked;
+    const togglePush = async () => {
+        const enabled = !pushEnabled;
         setSettingsMessage('');
         if (!enabled) {
             try {
@@ -82,8 +82,8 @@ export function Home({ logout, user, notificationsStatus, enableNotifications })
         }
     };
 
-    const toggleEmail = async (event) => {
-        const enabled = event.target.checked;
+    const toggleEmail = async () => {
+        const enabled = !emailEnabled;
         setEmailEnabled(enabled);
         setSavingEmail(true);
         setSettingsMessage('');
@@ -120,79 +120,30 @@ export function Home({ logout, user, notificationsStatus, enableNotifications })
         }
     };
 
-    return (
-        <div className="page home-lobby">
-            <AppHeader user={user} onLogout={logout} />
-
-            <main className="home-content lobby-content">
-                <section className="lobby-hero" aria-labelledby="lobby-title">
-                    <div className="lobby-hero-copy">
-                        <span className="lobby-kicker">THE HIVE IS YOURS TO COMMAND</span>
-                        <h1 id="lobby-title">Think in hexes.<br /><em>Move like a bee.</em></h1>
-                        <p>Outmaneuver your rival, protect your queen, and claim the sweetest victory.</p>
-                    </div>
-                    <div className="lobby-hero-art" aria-hidden="true">
-                        <div className="hero-halo" />
-                        <img src="/icons/bees/queen_yellow.png" alt="" />
-                    </div>
-                </section>
-
-                <nav className="lobby-menu" aria-label="Game modes">
-                    <button className="lobby-mode online-mode" onClick={() => navigate('/active')}>
-                        <span className="mode-index">01</span>
-                        <span className="mode-icon"><img src="/icons/bees/queen_blue.png" alt="" /></span>
-                        <span className="mode-copy"><strong>Play online</strong><small>Find a rival or return to a match</small></span>
-                        <span className="mode-arrow" aria-hidden="true">→</span>
-                    </button>
-                    <button className="lobby-mode ai-mode" onClick={() => navigate('/aigame')}>
-                        <span className="mode-index">02</span>
-                        <span className="mode-icon"><img src="/icons/bees/bee_red.png" alt="" /></span>
-                        <span className="mode-copy"><strong>AI challenge</strong><small>Sharpen your strategy against the hive</small></span>
-                        <span className="mode-arrow" aria-hidden="true">→</span>
-                    </button>
-                    <button className="lobby-mode friends-mode" onClick={() => navigate('/friends')}>
-                        <span className="mode-index">03</span>
-                        <span className="mode-icon"><img src="/icons/person.png" alt="" /></span>
-                        <span className="mode-copy"><strong>My friends</strong><small>Challenge your own crew</small></span>
-                        <span className="mode-arrow" aria-hidden="true">→</span>
-                    </button>
-                </nav>
-
-                {game && state === 'waiting' && (
-                    <section className="lobby-invitation" aria-label="New game challenge">
-                        <div className="invitation-copy">
-                            <span className="lobby-kicker">NEW CHALLENGE</span>
-                            <strong>{challenger} is calling you out</strong>
-                            <span className="invitation-rating"><img src="/icons/trophy.png" alt="" /> {challengerLevel} rating</span>
-                        </div>
-                        <div className="invitation-actions">
-                            <button className="decline-invite" onClick={() => cancelGame(game)} aria-label="Decline challenge">×</button>
-                            <button className="accept-invite" onClick={() => startGame(game)}>Accept match</button>
-                        </div>
-                    </section>
-                )}
-
-                <details className="lobby-settings">
-                    <summary><span>Player settings</span><small>Push and email alerts</small></summary>
-                    <section className="notification-settings" aria-labelledby="notification-heading">
-                        <h2 id="notification-heading">Notifications</h2>
-                        <label className="email-notification-toggle">
-                            <input type="checkbox" checked={pushEnabled} onChange={togglePush} disabled={notificationsStatus === 'denied' || notificationsStatus === 'unsupported' || notificationsStatus === 'insecure'} />
-                            <span>Push notifications (browser permission is set per device)</span>
-                        </label>
-                        {notificationsStatus === 'denied' && <p className="notification-status">Push is blocked in browser settings. Update this site’s permission there to turn it on.</p>}
-                        {notificationsStatus === 'unsupported' && <p className="notification-status">This browser does not support push notifications. Email notifications can still be enabled.</p>}
-                        {notificationsStatus === 'insecure' && <p className="notification-status">Push notifications require a secure HTTPS connection.</p>}
-                        {notificationsStatus === 'error' && <p className="notification-status" role="status">Push setup failed. Check your connection and try again.</p>}
-                        <label className="email-notification-toggle">
-                            <input type="checkbox" checked={emailEnabled} onChange={toggleEmail} disabled={savingEmail || !user.email} />
-                            <span>Email me about friend requests and game challenges</span>
-                        </label>
-                        {!user.email && <p className="notification-status">No email address is on this account.</p>}
-                        {settingsMessage && <p className="notification-status" role="status">{settingsMessage}</p>}
-                    </section>
-                </details>
-            </main>
-        </div>
-    );
+    return <ThreeAppCanvas
+        view="home"
+        user={user}
+        data={{
+            invitation: game && state === 'waiting' ? { id: game, name: challenger, level: challengerLevel } : null,
+            notificationsStatus,
+            pushEnabled,
+            emailEnabled,
+            savingEmail,
+            settingsMessage,
+        }}
+        actions={{
+            home: () => navigate('/'),
+            active: () => navigate('/active'),
+            friends: () => navigate('/friends'),
+            recent: () => navigate('/recent'),
+            playOnline: () => navigate('/active'),
+            playAI: () => navigate('/aigame'),
+            playLocal: () => navigate('/game'),
+            togglePush,
+            toggleEmail,
+            acceptInvite: () => game && startGame(game),
+            declineInvite: () => game && cancelGame(game),
+            logout,
+        }}
+    />;
 }

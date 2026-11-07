@@ -15,11 +15,9 @@ const Card = ({ card, onSelect, isSelected, ignore = false }) => {
 
                 const isMove = card?.moves.some(move => move.x === q && move.y === r);
 
-                const xSpacing = tileSize * 0.75;
-                const ySpacing = (Math.sqrt(3) / 2 * tileSize);
-
-                const x = q * xSpacing;
-                const y = (r + q / 2) * ySpacing;
+                const radius = tileSize / 2;
+                const x = Math.sqrt(3) * radius * (q + r / 2);
+                const y = 1.5 * radius * r;
 
                 return (
                     <div

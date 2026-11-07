@@ -4,6 +4,7 @@ import { db } from '../firebase';
 import { useParams, useNavigate } from 'react-router-dom';
 
 import { Game } from './Game';
+import { ThreeAppCanvas } from './ThreeAppCanvas';
 export function OnlineGame({user }) {
     const { gameId } = useParams();
     const navigate = useNavigate();
@@ -56,27 +57,18 @@ export function OnlineGame({user }) {
         };
     }, [gameId, user.id, navigate]);
 
-    return (
-        <div className="game-room">
-            
-            {gameData ? (
-                <>
-                    {gameData.State === "waiting" && <>
-                        <div className="game-room-popup">
-                        <h1>Game Room</h1>
-                        
-                            <p>Waiting for {gameData.P2Name || "Other Player"}...</p>
-                            <br></br>
-                            <button onClick={() => navigate('/friends')}>Return</button>
-                        </div>
-                    </>}
-                    {gameData.State !== "waiting" && gameData.State !== "canceled" && (
-                        <Game online={true} p1={gameData.P1Name} p2={gameData.P2Name} gameData={gameData} user={user} />
-                    )}
-                </>
-            ) : (
-                <p>Loading game...</p>
-            )}
-        </div>
-    );
+    useEffect(() => {
+        if (gameData?.State === 'canceled') navigate('/active');
+    }, [gameData?.State, navigate]);
+
+    if (!gameData) return <ThreeAppCanvas view="loading" />;
+    if (gameData.State === 'waiting') return <ThreeAppCanvas
+        view="waiting"
+        user={user}
+        data={{ opponent: gameData.P2Name || 'your opponent' }}
+        actions={{ active: () => navigate('/active'), home: () => navigate('/') }}
+    />;
+    if (gameData.State === 'canceled') return <ThreeAppCanvas view="loading" />;
+
+    return <Game online gameData={gameData} user={user} />;
 }

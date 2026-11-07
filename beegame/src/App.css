@@ -16,7 +16,7 @@
 }
 
 html {
-    background: var(--grey4);
+    background: #111c29;
 }
 html {
     min-height: 100%;
@@ -25,26 +25,25 @@ html {
     width: 100%;
 }
 body {
-    background: var(--grey4);
+    background: #111c29;
     margin: 0;
     min-height: 100vh;
     min-height: 100dvh;
+    overflow: hidden;
 }
 #root {
-    max-width: 1180px;
+    max-width: none;
     width: 100%;
-    margin: 0 auto;
+    margin: 0;
     padding: 0;
-    text-align: center;
+    text-align: left;
     height: 100vh;
     height: 100dvh;
-    font-family: "Odibee Sans";
-    justify-content: center;
-    display: flex;
-    overflow: auto;
-    flex-direction: column;
+    font-family: "Rubik", system-ui, sans-serif;
+    display: block;
+    overflow: hidden;
     position: relative;
-    background-color: var(--grey3);
+    background-color: #111c29;
     /*background-image: url("/images/bee1.svg");*/
     background-repeat: repeat;
 }
@@ -692,7 +691,7 @@ body:has(.youtube) {
 .login-queen { position: relative; z-index: 2; width: clamp(180px, 27vw, 285px); height: clamp(180px, 27vw, 285px); object-fit: contain; filter: drop-shadow(0 24px 25px #09131599); animation: hiveFloat 4.5s ease-in-out infinite; }
 .login-orbit { position: absolute; width: min(90%, 360px); aspect-ratio: 1; border: 1px solid #ffd97831; border-radius: 50%; transform: rotate(-24deg) scaleY(0.38); }
 .orbit-two { width: min(76%, 300px); border-color: #e9d89924; transform: rotate(49deg) scaleY(0.42); }
-.login-hex { position: absolute; z-index: 1; width: 36px; height: 40px; background: linear-gradient(155deg, #ffe280, #d9a435); clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); opacity: 0.84; filter: drop-shadow(0 8px 12px #060c0f77); }
+.login-hex { position: absolute; z-index: 1; width: 36px; height: 40px; background: linear-gradient(155deg, #ffe280, #d9a435); clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%); opacity: 0.84; filter: drop-shadow(0 8px 12px #060c0f77); }
 .hex-one { top: 16%; right: 14%; transform: rotate(12deg) scale(0.85); }
 .hex-two { bottom: 21%; left: 8%; transform: rotate(-14deg) scale(0.58); opacity: 0.6; }
 .login-board-chip { position: absolute; right: 3%; bottom: 14%; display: flex; align-items: center; gap: 8px; padding: 8px 11px; border: 1px solid #ffffff20; border-radius: 999px; background: #16262bd9; color: #d8dfca; font: 700 9px 'Rubik', sans-serif; letter-spacing: 0.12em; }
