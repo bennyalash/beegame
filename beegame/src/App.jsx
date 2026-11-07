@@ -17,6 +17,7 @@ import { Accept } from './components/Accept';
 import { ThreeAppCanvas } from './components/ThreeAppCanvas';
 
 
+
 import './App.css';
 
 function App() {
@@ -70,6 +71,42 @@ function App() {
             setLoginError(error?.code === 'auth/popup-blocked'
                 ? 'Your browser blocked the sign-in window. Allow pop-ups for this site and try again.'
                 : 'Sign-in could not be completed. Please try again.');
+        }
+    };
+
+    const getUser = (u, udoc) => {
+        if (!udoc.exists()) {
+            return {
+                id: u.uid,
+                name: u.displayName || '',
+                email: u.email || '',
+                photoURL: u.photoURL || '',
+                friends: [],
+                level: 1000,
+                username: u.email.split("@")[0],
+                createdAt: new Date().toISOString()
+            };
+        }
+        else {
+            return udoc.data()
+        }
+    }
+
+    const addUserIfNotExists = async (fbuser) => {
+        const userDocRef = doc(db, "Users", fbuser.uid);
+        const userDoc = await getDoc(userDocRef);
+        
+        const userData = getUser(fbuser, userDoc);
+        setUserData(userData);
+        
+
+        setUser(userData);
+
+        if (!userDoc.exists()) {
+            await setDoc(userDocRef, userData);
+            console.log("New user added to the database.");
+        } else {
+            console.log("User already exists in the database.");
         }
     };
 
