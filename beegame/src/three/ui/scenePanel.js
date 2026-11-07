@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { BOARD_COORDS } from '../../game/hexGrid.js';
 
 const PALETTE = {
     ink: '#172333',
@@ -8,6 +9,15 @@ const PALETTE = {
     muted: '#b6c0c2',
     gold: '#e4b64c',
 };
+
+export function getMoveCardHexStates(moves = []) {
+    const destinationKeys = new Set(moves.map(({ x, y }) => `${x},${y}`));
+    return BOARD_COORDS.map(([q, r]) => ({
+        q,
+        r,
+        state: q === 0 && r === 0 ? 'origin' : destinationKeys.has(`${q},${r}`) ? 'move' : 'faded',
+    }));
+}
 
 function roundedRect(context, x, y, width, height, radius) {
     const r = Math.min(radius, width / 2, height / 2);
@@ -58,17 +68,19 @@ function wrapText(context, text, x, y, maxWidth, lineHeight) {
     return y;
 }
 
-function createPanelCanvas(options, aspect) {
+function createPanelCanvas(options, panelWidth, panelHeight) {
     const canvas = document.createElement('canvas');
-    const safeAspect = Math.max(0.8, aspect);
-    canvas.width = Math.min(4096, Math.max(1024, Math.round(safeAspect * 256)));
-    canvas.height = Math.max(48, Math.round(canvas.width / safeAspect));
+    const pixelsPerUnit = Math.min(600, 4096 / Math.max(panelWidth, panelHeight));
+    canvas.width = Math.max(256, Math.round(panelWidth * pixelsPerUnit));
+    canvas.height = Math.max(128, Math.round(panelHeight * pixelsPerUnit));
     const context = canvas.getContext('2d');
     const width = canvas.width;
     const height = canvas.height;
     const inset = Math.round(Math.min(width, height) * 0.025);
     const isCard = options.kind === 'card';
     const isButton = options.kind === 'button';
+    const lightSurface = isCard || Boolean(options.background);
+    const safeAspect = canvas.width / canvas.height;
     const accent = options.accent || PALETTE.gold;
     const bg = options.background || (isCard ? '#efe4c9' : '#1d2c3a');
 
@@ -85,25 +97,25 @@ function createPanelCanvas(options, aspect) {
     roundedRect(context, inset, inset, width - inset * 2, height - inset * 2, Math.min(36, height * 0.08));
     context.fillStyle = gradient;
     context.fill();
-    context.lineWidth = Math.max(4, height * 0.012);
-    context.strokeStyle = options.selected ? '#ffe08a' : `${accent}a8`;
+    context.lineWidth = Math.max(2, height * 0.006);
+    context.strokeStyle = options.selected ? '#d5aa4e' : (isCard ? '#92876770' : '#d7ddce35');
     context.stroke();
 
-    if (!isCard) {
-        roundedRect(context, inset + 8, inset + 8, Math.max(14, width * 0.014), height - inset * 2 - 16, 12);
+    if (!isCard && !isButton) {
+        roundedRect(context, inset + 8, inset + 8, Math.max(5, width * 0.006), height - inset * 2 - 16, 8);
         context.fillStyle = accent;
         context.fill();
     }
 
-    const left = isCard ? width * 0.09 : width * 0.085;
+    const left = isCard ? width * 0.07 : width * 0.06;
     const titleY = options.eyebrow ? height * 0.39 : height * 0.47;
-    const titleColor = isCard ? '#24303a' : PALETTE.cream;
+    const titleColor = lightSurface ? '#24303a' : PALETTE.cream;
     const compactWidePanel = safeAspect >= 10;
-    const titleSize = Math.max(18, Math.min(180, height * (compactWidePanel ? 0.2 : 0.34)));
+    const titleSize = Math.max(18, Math.min(180, height * (compactWidePanel ? 0.28 : isButton ? 0.42 : 0.34)));
 
     if (options.eyebrow) {
         context.font = `700 ${Math.max(25, height * 0.075)}px Rubik, sans-serif`;
-        context.fillStyle = isCard ? '#7b622f' : '#e8be5c';
+        context.fillStyle = lightSurface ? '#7b622f' : '#e8be5c';
         context.textAlign = 'left';
         context.textBaseline = 'middle';
         context.fillText(String(options.eyebrow).toUpperCase(), left, height * 0.2, width - left * 2);
@@ -116,16 +128,18 @@ function createPanelCanvas(options, aspect) {
         context.textBaseline = 'middle';
         context.fillText(String(options.title || 'Move').toUpperCase(), left, height * 0.18, width * 0.65);
 
-        const radius = Math.min(width, height) * 0.105;
-        const centerX = width * 0.5;
-        const centerY = height * 0.62;
+        const radius = Math.min(width, height) * 0.075;
+        const centerX = width * 0.55;
+        const centerY = height * 0.66;
         const spacingX = Math.sqrt(3) * radius;
         const spacingY = 1.5 * radius;
-        const vectors = [{ x: 0, y: 0, center: true }, ...options.moves.map((move) => ({ x: move.x, y: move.y }))];
-        for (const vector of vectors) {
-            const x = centerX + spacingX * (vector.x + vector.y / 2);
-            const y = centerY + spacingY * vector.y;
-            drawPointyHex(context, x, y, radius * 0.87, vector.center ? '#aa904b' : '#38594c', vector.center ? '#fff0b7' : '#718d6d');
+        for (const cell of getMoveCardHexStates(options.moves)) {
+            const { q, r } = cell;
+            const x = centerX + spacingX * (q + r / 2);
+            const y = centerY + spacingY * r;
+            const fill = cell.state === 'origin' ? '#41634f' : cell.state === 'move' ? '#d9b45d' : '#59665b40';
+            const stroke = cell.state === 'origin' ? '#e8d79c' : cell.state === 'move' ? '#ecd79b' : '#7a887b55';
+            drawPointyHex(context, x, y, radius * 0.86, fill, stroke);
         }
         return canvas;
     }
@@ -134,12 +148,12 @@ function createPanelCanvas(options, aspect) {
     context.fillStyle = titleColor;
     context.textAlign = 'left';
     context.textBaseline = 'middle';
-    const maxTitleWidth = options.trailing ? width * 0.72 : width - left * 2;
+    const maxTitleWidth = options.trailing ? width * 0.72 : width - left * (isButton ? 3.0 : 2.0);
     context.fillText(String(options.title || ''), left, titleY, maxTitleWidth);
 
     if (options.trailing) {
         context.font = `700 ${Math.max(34, height * 0.18)}px "Rubik", sans-serif`;
-        context.fillStyle = isCard ? '#7e672f' : '#f2cb6c';
+        context.fillStyle = lightSurface ? '#7e672f' : '#f2cb6c';
         context.textAlign = 'right';
         context.fillText(String(options.trailing), width - left, titleY, width * 0.2);
     }
@@ -148,7 +162,7 @@ function createPanelCanvas(options, aspect) {
     if (subtitle) {
         const subtitleSize = Math.max(14, Math.min(84, height * (compactWidePanel ? 0.11 : 0.17)));
         context.font = `500 ${subtitleSize}px "Rubik", sans-serif`;
-        context.fillStyle = isCard ? '#625e52' : PALETTE.muted;
+        context.fillStyle = lightSurface ? '#625e52' : PALETTE.muted;
         context.textBaseline = 'top';
         context.textAlign = 'left';
         wrapText(context, String(subtitle), left, height * (options.eyebrow ? 0.58 : 0.67), width - left * 2, subtitleSize * 1.32);
@@ -167,10 +181,16 @@ function createPanelCanvas(options, aspect) {
     }
 
     if (isButton) {
-        context.fillStyle = '#fff1b9';
+        context.strokeStyle = accent;
+        context.lineWidth = Math.max(2, height * 0.035);
+        context.lineCap = 'round';
         context.beginPath();
-        context.arc(width - left * 1.5, height * 0.77, Math.min(18, height * 0.045), 0, Math.PI * 2);
-        context.fill();
+        const arrowX = width - left * 1.35;
+        const arrowY = height * 0.5;
+        context.moveTo(arrowX - height * 0.045, arrowY - height * 0.07);
+        context.lineTo(arrowX + height * 0.025, arrowY);
+        context.lineTo(arrowX - height * 0.045, arrowY + height * 0.07);
+        context.stroke();
     }
     return canvas;
 }
@@ -196,13 +216,13 @@ export function createScenePanel({
     disabled = false,
 }) {
     const group = new THREE.Group();
-    const baseColor = isColor(accent) ? accent : '#263344';
+    const baseColor = kind === 'card' ? '#cbbd9a' : '#263b38';
     const body = new THREE.Mesh(
-        new RoundedBoxGeometry(width, height, depth, 4, Math.min(0.07, depth * 0.32)),
+        new RoundedBoxGeometry(width, height, depth, 3, Math.min(0.045, depth * 0.28)),
         new THREE.MeshStandardMaterial({
-            color: kind === 'card' ? '#b79654' : baseColor,
-            roughness: kind === 'card' ? 0.42 : 0.38,
-            metalness: kind === 'card' ? 0.32 : 0.44,
+            color: baseColor,
+            roughness: kind === 'card' ? 0.76 : 0.8,
+            metalness: 0.025,
             emissive: selected ? '#4e3712' : '#000000',
             emissiveIntensity: selected ? 0.28 : 0,
         }),
@@ -211,10 +231,12 @@ export function createScenePanel({
     body.receiveShadow = true;
     group.add(body);
 
-    const canvas = createPanelCanvas({ title, subtitle, detail, eyebrow, badge, trailing, moves, kind, accent, background, backgroundEnd, selected }, width / height);
+    const canvas = createPanelCanvas({ title, subtitle, detail, eyebrow, badge, trailing, moves, kind, accent, background, backgroundEnd, selected }, width, height);
     const texture = new THREE.CanvasTexture(canvas);
     texture.colorSpace = THREE.SRGBColorSpace;
-    texture.anisotropy = 4;
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.anisotropy = 8;
     const face = new THREE.Mesh(
         new THREE.PlaneGeometry(width - 0.08, height - 0.08),
         new THREE.MeshBasicMaterial({ map: texture, toneMapped: false, transparent: false, side: THREE.DoubleSide }),
@@ -242,8 +264,4 @@ export function createScenePanel({
     };
     group.userData.title = title;
     return group;
-}
-
-function isColor(value) {
-    return typeof value === 'string' && /^#[\da-f]{3,8}$/i.test(value);
 }

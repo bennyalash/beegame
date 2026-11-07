@@ -26,18 +26,6 @@ function disposeGroup(group) {
     });
 }
 
-function createHexProp(radius, depth, color, x, y, z, rotation = POINTY_TOP_ROTATION) {
-    const mesh = new THREE.Mesh(
-        new THREE.CylinderGeometry(radius * 0.91, radius, depth, 6),
-        new THREE.MeshStandardMaterial({ color, roughness: 0.62, metalness: 0.12 }),
-    );
-    mesh.rotation.y = rotation;
-    mesh.position.set(x, y, z);
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-    return mesh;
-}
-
 function dataText(value, fallback = '') {
     return value === null || value === undefined || value === '' ? fallback : String(value);
 }
@@ -152,11 +140,11 @@ export function ThreeAppCanvas({
 
         try {
             const scene = new THREE.Scene();
-            scene.background = new THREE.Color('#111c29');
-            scene.fog = new THREE.Fog('#111c29', 24, 54);
+            scene.background = new THREE.Color('#e6e3d9');
+            scene.fog = new THREE.Fog('#e6e3d9', 26, 58);
 
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.5));
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -185,7 +173,7 @@ export function ThreeAppCanvas({
 
             const floor = new THREE.Mesh(
                 new THREE.PlaneGeometry(100, 100),
-                new THREE.MeshStandardMaterial({ color: '#172434', roughness: 0.94, metalness: 0.04 }),
+                new THREE.MeshStandardMaterial({ color: '#e9e6dc', roughness: 0.96, metalness: 0 }),
             );
             floor.rotation.x = -Math.PI / 2;
             floor.position.y = -3.15;
@@ -217,15 +205,6 @@ export function ThreeAppCanvas({
             heroStage.add(hero);
             scene.add(heroStage);
             heroRef.current = hero;
-
-            const decoration = new THREE.Group();
-            for (let index = 0; index < 11; index += 1) {
-                const angle = (index / 11) * Math.PI * 2;
-                const radius = 7.3 + (index % 3) * 0.55;
-                const hex = createHexProp(0.48 + (index % 2) * 0.14, 0.12, index % 3 === 0 ? '#9a7538' : '#263b43', Math.cos(angle) * radius, -2.8 + (index % 2) * 0.34, Math.sin(angle) * radius - 2, POINTY_TOP_ROTATION);
-                decoration.add(hex);
-            }
-            scene.add(decoration);
 
             const uiGroup = new THREE.Group();
             uiGroup.position.z = -6.5;
@@ -309,21 +288,22 @@ export function ThreeAppCanvas({
                 const width = Math.max(1, rect.width);
                 const height = Math.max(1, rect.height);
                 const aspect = width / height;
-                const viewHeight = Math.max(10.8, 6.6 / aspect);
+                const viewHeight = Math.max(9.6, 6.6 / aspect);
                 const viewWidth = viewHeight * aspect;
                 camera.left = -viewWidth / 2;
                 camera.right = viewWidth / 2;
                 camera.top = viewHeight / 2;
                 camera.bottom = -viewHeight / 2;
                 camera.updateProjectionMatrix();
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.5));
                 renderer.setSize(width, height, false);
                 const currentView = propsRef.current.view;
-                const mobile = aspect < 0.78;
+                const mobile = aspect < 0.78 || viewWidth < 7.8;
                 if (heroRef.current) {
-                    const showHero = ['home', 'login', 'loading'].includes(currentView);
+                    const showHero = ['login', 'loading'].includes(currentView) || (currentView === 'home' && !mobile);
                     const stage = heroRef.current.parent;
                     const stageScale = mobile ? 0.55 : 1;
-                    const targetX = mobile ? 0 : -viewWidth * 0.3;
+                    const targetX = mobile ? 0 : currentView === 'login' ? viewWidth * 0.28 : -viewWidth * 0.3;
                     const targetBaseY = mobile
                         ? (currentView === 'home' ? -5.0 : currentView === 'login' ? -3.4 : -4.4)
                         : -2.48;
@@ -388,9 +368,9 @@ export function ThreeAppCanvas({
             uiGroup.clear();
             const panels = [];
             const current = propsRef.current;
-            const mobile = aspect < 0.78;
+            const mobile = aspect < 0.78 || viewWidth < 7.8;
             if (heroRef.current?.parent) {
-                heroRef.current.parent.visible = ['home', 'login', 'loading'].includes(current.view)
+                heroRef.current.parent.visible = ['login', 'loading'].includes(current.view) || (current.view === 'home' && !mobile)
                     && !(mobile && current.view === 'home' && current.settingsOpen);
             }
             const width = mobile ? Math.min(viewWidth - 0.5, 6.15) : Math.max(0, viewWidth - 0.5);
@@ -401,20 +381,22 @@ export function ThreeAppCanvas({
                 if (panel.userData.interactive) panels.push(panel);
                 return panel;
             };
-            const headerY = viewHeight / 2 - (mobile ? 1.18 : 0.62);
-            add({ width, height: 0.78, title: 'GO BEE', subtitle: dataText(current.user?.username || current.user?.name, current.view === 'login' ? 'A STRATEGY GAME FOR YOUR NEXT MOVE' : 'THE HIVE IS READY'), badge: current.user?.level || '', kind: 'panel', accent: '#d7a53f' }, 0, headerY, -0.05);
+            const headerY = viewHeight / 2 - 0.58;
+            const brandWidth = mobile ? 2.8 : 3.0;
+            add({ width: brandWidth, height: 0.62, title: 'GO BEE', subtitle: current.user?.username || current.user?.name || 'STRATEGY FOR THE HIVE', badge: current.user?.level || '', kind: 'panel', accent: '#8b7747', background: '#f8f6ee', backgroundEnd: '#f0eee4' }, -viewWidth / 2 + brandWidth / 2 + (mobile ? 0.18 : 0.28), headerY, -0.05);
 
             if (current.view !== 'login' && current.view !== 'loading') {
                 if (!mobile) {
-                    const navWidth = Math.min(1.75, width * 0.13);
-                    const totalWidth = NAV_ITEMS.length * navWidth + (NAV_ITEMS.length - 1) * 0.12;
-                    const start = width / 2 - totalWidth + navWidth / 2 - 0.28;
+                    const navWidth = Math.min(1.35, width * 0.12);
+                    const gap = 0.08;
+                    const totalWidth = NAV_ITEMS.length * navWidth + (NAV_ITEMS.length - 1) * gap;
+                    const start = width / 2 - totalWidth - (current.user ? 1.15 : 0.12) + navWidth / 2;
                     NAV_ITEMS.forEach(([action, label], index) => {
-                        add({ width: navWidth, height: 0.48, title: label, kind: 'button', action, accent: action === current.view ? '#e5b84f' : '#7793a0', selected: action === current.view }, start + index * (navWidth + 0.12), headerY, 0.15);
+                        add({ width: navWidth, height: 0.46, title: label, kind: 'button', action, accent: action === current.view ? '#a5833d' : '#77847c', selected: action === current.view }, start + index * (navWidth + gap), headerY, 0.15);
                     });
-                    if (current.user) add({ width: 1.18, height: 0.48, title: 'SIGN OUT', kind: 'button', action: 'logout', accent: '#ba7562' }, start - navWidth / 2 - 0.68, headerY, 0.15);
+                    if (current.user) add({ width: 0.9, height: 0.46, title: 'EXIT', kind: 'button', action: 'logout', accent: '#9a6358' }, start + totalWidth - navWidth / 2 + 0.1 + 0.45, headerY, 0.15);
                 } else if (current.user) {
-                    add({ width: 1.1, height: 0.48, title: 'EXIT', kind: 'button', action: 'logout', accent: '#ba7562' }, width / 2 - 0.68, headerY, 0.15);
+                    add({ width: 0.96, height: 0.46, title: 'EXIT', kind: 'button', action: 'logout', accent: '#9a6358' }, viewWidth / 2 - 0.68, headerY, 0.15);
                 }
             }
 
@@ -424,32 +406,33 @@ export function ThreeAppCanvas({
                 const gap = 0.06;
                 const total = NAV_ITEMS.length * navWidth + (NAV_ITEMS.length - 1) * gap;
                 NAV_ITEMS.forEach(([action, label], index) => {
-                    add({ width: navWidth, height: 0.55, title: label, kind: 'button', action, accent: action === current.view ? '#e5b84f' : '#7793a0', selected: action === current.view }, -total / 2 + navWidth / 2 + index * (navWidth + gap), bottomNavY, 0.15);
+                    add({ width: navWidth, height: 0.7, title: label, kind: 'button', action, accent: action === current.view ? '#a5833d' : '#77847c', selected: action === current.view }, -total / 2 + navWidth / 2 + index * (navWidth + gap), bottomNavY, 0.15);
                 });
             }
 
             if (current.view === 'loading') {
                 add({ width: Math.min(width * 0.86, 7.4), height: 1.45, eyebrow: 'GO BEE', title: 'SETTING UP THE HIVE', subtitle: 'Loading your game and friends', accent: '#e5b84f' }, 0, 0, 0.1);
             } else if (current.view === 'login') {
-                add({ width: Math.min(width * 0.9, mobile ? 5.9 : 7.6), height: 1.25, eyebrow: 'THE HIVE AWAITS', title: 'THINK IN HEXES', subtitle: 'Protect your queen. Make the next move count.', accent: '#e5b84f' }, mobile ? 0 : width * 0.19, mobile ? 4.1 : 1.0, 0.15);
-                add({ width: Math.min(width * 0.9, mobile ? 5.9 : 5.5), height: 1.0, title: 'CONTINUE WITH GOOGLE', subtitle: 'Secure sign-in · your progress follows your account', kind: 'button', action: 'login', accent: '#d6a23d' }, mobile ? 0 : width * 0.19, mobile ? 2.5 : -0.6, 0.18);
-                if (current.loginError) add({ width: Math.min(width * 0.9, 5.4), height: 0.74, title: 'SIGN-IN DID NOT COMPLETE', subtitle: current.loginError, accent: '#c9655c' }, mobile ? 0 : width * 0.19, mobile ? 1.35 : -1.65, 0.2);
-                add({ width: Math.min(width - 0.3, mobile ? 5.9 : 8.0), height: 0.62, title: 'PLAY IN YOUR BROWSER  ·  INSTALL IS OPTIONAL', kind: 'panel', accent: '#56766e' }, 0, mobile ? -5.35 : -4.75, 0.1);
+                const loginX = mobile ? 0 : -width * 0.19;
+                add({ width: Math.min(width * 0.86, mobile ? 5.9 : 6.6), height: 1.14, eyebrow: 'A STRATEGY GAME FOR YOUR NEXT MOVE', title: 'THINK IN HEXES', subtitle: 'Outplay your rival. Protect your queen.', accent: '#a5833d', background: '#f8f6ee', backgroundEnd: '#f0eee4' }, loginX, mobile ? 3.1 : 0.9, 0.15);
+                add({ width: Math.min(width * 0.82, mobile ? 5.2 : 4.7), height: 0.82, title: 'CONTINUE WITH GOOGLE', subtitle: 'Your games follow your account', kind: 'button', action: 'login', accent: '#355844' }, loginX, mobile ? 1.8 : -0.58, 0.18);
+                if (current.loginError) add({ width: Math.min(width * 0.82, 5.0), height: 0.68, title: 'SIGN-IN DID NOT COMPLETE', subtitle: current.loginError, accent: '#a36054' }, loginX, mobile ? 0.75 : -1.55, 0.2);
+                add({ width: Math.min(width - 0.4, mobile ? 5.9 : 6.6), height: 0.58, title: 'INSTALLATION IS OPTIONAL', subtitle: 'Play in your browser on any device', accent: '#627361', background: '#f6f4ec', backgroundEnd: '#efede4' }, mobile ? 0 : -width * 0.19, mobile ? -5.5 : -3.5, 0.1);
             } else if (current.view === 'home') {
-                add({ width: Math.min(width * 0.78, mobile ? 5.6 : 8.3), height: 1.15, eyebrow: 'THE HIVE IS YOURS TO COMMAND', title: 'THINK IN HEXES. MOVE LIKE A BEE.', subtitle: 'Outmaneuver your rival and protect your queen.', accent: '#e5b84f' }, mobile ? 0 : width * 0.14, mobile ? 4.25 : 2.8, 0.12);
+                add({ width: Math.min(width * 0.76, mobile ? 5.6 : 8.0), height: 1.12, eyebrow: 'YOUR HIVE. YOUR NEXT MOVE.', title: 'OUTTHINK THE RIVAL.', subtitle: 'Choose a table and defend your queen.', accent: '#a5833d', background: '#f8f6ee', backgroundEnd: '#f0eee4' }, mobile ? 0 : width * 0.12, mobile ? 4.0 : 2.55, 0.12);
 
                 const modes = [
-                    { action: 'playOnline', title: 'PLAY ONLINE', subtitle: 'Find a rival or return to a match', badge: '01', accent: '#4f91ac' },
-                    { action: 'playAI', title: 'AI CHALLENGE', subtitle: 'Sharpen your strategy against the hive', badge: '02', accent: '#c95d50' },
-                    { action: 'playLocal', title: 'LOCAL MATCH', subtitle: 'Take both sides at one table', badge: '03', accent: '#d3a743' },
+                    { action: 'playOnline', title: 'PLAY ONLINE', subtitle: 'Challenge a player or resume a game', badge: '01', accent: '#4f7563' },
+                    { action: 'playAI', title: 'PLAY THE HIVE', subtitle: 'Practice against the AI rival', badge: '02', accent: '#9a6556' },
+                    { action: 'playLocal', title: 'LOCAL MATCH', subtitle: 'Play both sides on one device', badge: '03', accent: '#a5833d' },
                 ];
                 if (mobile) {
-                    modes.forEach((mode, index) => add({ width: width * 0.9, height: 1.22, ...mode, kind: 'button' }, 0, 2.15 - index * 1.5, 0.18));
+                    modes.forEach((mode, index) => add({ width: width * 0.88, height: 1.04, ...mode, kind: 'button' }, 0, 1.45 - index * 1.28, 0.18));
                 } else {
-                    const cardWidth = Math.min(4.35, width * 0.29);
-                    const gap = 0.2;
+                    const cardWidth = Math.min(3.65, width * 0.26);
+                    const gap = 0.16;
                     const start = -((cardWidth * modes.length + gap * (modes.length - 1)) / 2) + cardWidth / 2;
-                    modes.forEach((mode, index) => add({ width: cardWidth, height: 1.42, ...mode, kind: 'button' }, start + index * (cardWidth + gap), -0.18, 0.18));
+                    modes.forEach((mode, index) => add({ width: cardWidth, height: 1.16, ...mode, kind: 'button' }, start + index * (cardWidth + gap), -0.38, 0.18));
                 }
 
                 if (current.data.invitation?.id) {

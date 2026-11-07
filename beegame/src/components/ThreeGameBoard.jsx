@@ -239,11 +239,11 @@ export function ThreeGameBoard({
         let animationFrame;
         try {
             const scene = new THREE.Scene();
-            scene.background = new THREE.Color('#111c29');
-            scene.fog = new THREE.Fog('#111c29', 13, 28);
+            scene.background = new THREE.Color('#e6e3d9');
+            scene.fog = new THREE.Fog('#e6e3d9', 16, 34);
 
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.5));
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -262,6 +262,7 @@ export function ThreeGameBoard({
             const uiGroup = new THREE.Group();
             uiGroup.position.z = -5.7;
             camera.add(uiGroup);
+            uiGroupRef.current = uiGroup;
 
             scene.add(new THREE.HemisphereLight('#f7efd8', '#26392c', 1.8));
             const keyLight = new THREE.DirectionalLight('#fff2d8', 3.4);
@@ -433,7 +434,7 @@ export function ThreeGameBoard({
                 const width = host.clientWidth || 400;
                 const height = host.clientHeight || 400;
                 const aspect = width / height;
-                const frustumHeight = Math.max(12.2, 9.6 / aspect);
+                const frustumHeight = Math.max(9.6, 9.6 / aspect);
                 viewAspectRef.current = aspect;
                 viewHeightRef.current = frustumHeight;
                 camera.left = (-frustumHeight * aspect) / 2;
@@ -441,6 +442,7 @@ export function ThreeGameBoard({
                 camera.top = frustumHeight / 2;
                 camera.bottom = -frustumHeight / 2;
                 camera.updateProjectionMatrix();
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.5));
                 renderer.setSize(width, height, false);
                 uiTargetsRef.current = buildGameHud(uiGroup, propsRef.current, aspect, frustumHeight);
             };

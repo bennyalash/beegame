@@ -2,15 +2,17 @@ html,
 body,
 #root {
     width: 100%;
-    height: 100%;
-    min-height: 100%;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 100vh;
+    min-height: 100dvh;
     margin: 0;
 }
 
 html,
 body {
     overflow: hidden;
-    background: #111c29;
+    background: #e6e3d9;
     overscroll-behavior: none;
 }
 
@@ -21,28 +23,31 @@ body {
     padding: 0 !important;
     overflow: hidden;
     text-align: left;
-    background: #111c29;
-    color: #f6f0e2;
+    background: #e6e3d9;
+    color: #24332e;
     font-family: 'Rubik', system-ui, sans-serif;
 }
 
 .three-app-shell,
 .board.three-board {
-    position: fixed;
-    z-index: 1;
-    inset: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
-    box-sizing: border-box;
-    width: auto;
-    height: auto;
-    min-height: 0;
-    max-width: none;
-    margin: 0;
-    overflow: hidden;
-    border: 0;
-    border-radius: 0;
-    background: #111c29;
-    box-shadow: none;
-    touch-action: none;
+    position: fixed !important;
+    z-index: 1 !important;
+    inset: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px) !important;
+    box-sizing: border-box !important;
+    width: auto !important;
+    height: auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    flex: none !important;
+    touch-action: none !important;
 }
 
 .three-app-host {
@@ -106,20 +111,20 @@ body {
 }
 
 .board.three-board-fallback {
-    position: fixed;
-    inset: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
-    z-index: 1;
-    display: flex;
+    position: fixed !important;
+    inset: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px) !important;
+    z-index: 1 !important;
+    display: flex !important;
     flex-direction: column;
-    width: auto;
-    max-width: none;
-    height: auto;
-    min-height: 0;
-    margin: 0;
-    overflow: auto;
-    border: 0;
-    border-radius: 0;
-    background: #111c29;
+    width: auto !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    overflow: auto !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #e6e3d9;
 }
 
 @media (prefers-reduced-motion: reduce) {

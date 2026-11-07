@@ -54,7 +54,7 @@ export function buildGameHud(group, props, aspect, viewHeight) {
     removePanels(group);
     const targets = [];
     const viewWidth = aspect * viewHeight;
-    const mobile = aspect < 0.72;
+    const mobile = aspect < 0.9 || viewWidth < 10.5;
     const topY = viewHeight / 2 - (mobile ? 1.18 : 0.58);
     const bottomY = -viewHeight / 2 + (mobile ? 1.45 : 0.62);
     const fullWidth = Math.max(5.6, viewWidth - 0.32);

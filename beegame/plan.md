@@ -4,21 +4,21 @@
 Replace the current split presentation—3D board plus HTML/CSS app chrome—with a game-first, fully scene-rendered experience. Every visible screen and control (sign-in, lobby, friends, active/recent games, notification settings, in-match cards/HUD/menu, and match results) should be drawn and interactive inside Three.js canvases. Preserve Firebase state and the installable/downloadable PWA; this is a presentation and interaction-shell refactor, not a rewrite of game rules or notification services.
 
 ## Design direction
-**Design movement:** a polished competitive tabletop crossed with the lively, collectible-character staging of modern mobile strategy games. Borrow the clarity, information hierarchy, and competitive readability of the user's Chess.com reference and the bold dimensionality and expressive character presence of the user's Clash Royale reference; create original Go Bee art and UI rather than copying either product.
+**Design movement:** a refined, full-bleed strategy tabletop with a restrained modern game-client interface. Keep the original dimensional bee character, but remove oversized novelty framing, excessive metallic edging, floating clutter, and decorative filler. The canvas should feel like a polished game product rather than a concept render.
 
-**Core principles:** (1) every visible control belongs to the 3D scene; (2) game state is readable at a glance; (3) tactile, beveled materials distinguish board, cards, and actions; (4) motion supports turns and feedback without obstructing play.
+**Core principles:** (1) every visible control belongs to the 3D scene; (2) clear hierarchy, proportion, and spacing make every screen feel intentional; (3) full-viewport responsive composition replaces the small centered game-box layout; (4) precise raycast and keyboard interactions make every control and game move reliable; (5) render at device resolution with crisp, high-density canvas textures.
 
-**Color philosophy:** midnight blue/green scene foundations keep the hive legible; honey-gold marks focus, selection, and rewards; the two sides use clear warm-red and cobalt-blue accents. Use restrained metallic trim rather than broad neon glows.
+**Color philosophy:** a calm ink/forest foundation supports warm paper cards and restrained honey-gold focus cues; the two sides retain clear warm-red and blue identifiers. Avoid broad gold borders, shiny surfaces, and heavy shadowing that read as tacky or reduce clarity.
 
-**Layout paradigm:** full-viewport 3D diorama, not a centered webpage. The home/social screens stage thick, camera-facing 3D navigation panels around an original bee champion. Match screens place the pointy-top board in the tabletop, with physically modeled movement cards, readable turn/status plaques, and pause/result panels composed in the same camera view. Responsive camera framing reflows panels and card rows for desktop, portrait mobile, and landscape.
+**Layout paradigm:** a truly full-viewport scene with deliberate safe-area padding. Desktop uses the available width for a balanced hero, navigation and content rather than a constrained square; mobile prioritizes the game board, thumb-sized controls and compact card rows, reflowing with viewport aspect and available height. Friends, game lists, settings and match screens share the same margins, type scale, alignment and spacing tokens.
 
-**Signature elements:** a hexagonal arena plinth with beveled pointy-top tiles; embossed, hinged movement cards with in-scene diagrams; original bee champions with segmented chitin, expressive faces, small wings, and side-specific enamel armor.
+**Signature elements:** restrained pointy-top hex diagrams on every move card (faded for non-destination cells, clearly emphasizing the origin and legal vectors); softly beveled playable hexes; one original bee champion used selectively as a supporting character, not as a substitute for page structure.
 
-**Interaction philosophy:** raycast selection for 3D board tiles, pieces, cards, navigation panels, and buttons; restrained hover/press feedback; keyboard and screen-reader equivalents remain available through a visually-hidden semantic control layer, while all visible UI remains in the canvas.
+**Interaction philosophy:** raycast hit targets must map deterministically to visible 3D actions. Cards visibly select, owned pieces select, legal destinations highlight, and choosing a destination presents a clear confirm/cancel step. Pointer, touch, keyboard and semantic controls must trigger the same actions; add regression coverage for the complete local move path.
 
-**Animation:** eased panel arrivals, a brief lift/tilt on card selection, small champion idle motion, clear legal-move/capture response, and a stable signed-in-player camera across online opponent turns. Local hot-seat view may orient to the active seat so neither player sees the board upside down.
+**Animation:** short, purposeful transitions with subdued idle motion, a crisp selection lift, visible legal-move/capture response and no camera movement that interferes with input. Respect reduced motion and maintain a stable signed-in-player camera across online turns.
 
-**Typography system:** preserve Rubik for compact interface copy and Odibee Sans for short game headings; render text sharply onto Three.js canvas textures with sufficient scale and contrast.
+**Typography system:** use Rubik for all interface text and reserve Odibee Sans for a few brief game headings. Keep text sizes readable at phone scale, use device-aware high-resolution textures, enable correct color space/anisotropy, and avoid enlarging low-resolution texture content.
 
 **Brand essence:** an approachable strategy hive for quick, competitive matches; **clever, tactile, spirited**.
 
