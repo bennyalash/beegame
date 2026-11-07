@@ -723,7 +723,7 @@ body:has(.youtube) {
 
 /* Refined, full-bleed Go Bee interface */
 :root {
-    --app-canvas: #f1eedf;
+    --app-canvas: #e6e3d9;
     --app-paper: #fffdf6;
     --app-paper-alt: #e7e2d2;
     --app-ink: #24332e;

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { axialToWorld, BOARD_COORDS, getLegalMoveDestinations, POINTY_TOP_ROTATION } from './hexGrid.js';
+import { getMoveCardHexStates } from '../three/ui/scenePanel.js';
 
 test('axial coordinates map to pointy-top hex spacing in the X/Z plane', () => {
     const radius = 2;
@@ -34,6 +35,16 @@ test('hex mesh rotation puts a vertex at the pointy top of the board', () => {
 
     geometry.dispose();
     assert.equal(hasNorthVertex, true);
+});
+
+test('move card hex map fades unused cells and highlights the origin and legal vectors', () => {
+    const hexes = getMoveCardHexStates([{ x: 1, y: -1 }, { x: 0, y: 2 }]);
+    assert.equal(hexes.length, 19);
+    assert.deepEqual(hexes.map(({ q, r }) => `${q},${r}`), BOARD_COORDS.map(([q, r]) => `${q},${r}`));
+    assert.equal(hexes.find(({ q, r }) => q === 0 && r === 0)?.state, 'origin');
+    assert.equal(hexes.find(({ q, r }) => q === 1 && r === -1)?.state, 'move');
+    assert.equal(hexes.find(({ q, r }) => q === 0 && r === 2)?.state, 'move');
+    assert.equal(hexes.filter(({ state }) => state === 'faded').length, 16);
 });
 
 test('card vectors rotate 180 degrees for player one and remain unchanged for player two', () => {
