@@ -2,7 +2,6 @@
   "name": "Go Bee",
   "short_name": "Go Bee",
   "start_url": "/",
-  "scope": "/",
   "display": "standalone",
   "background_color": "#111c29",
   "theme_color": "#111c29",
